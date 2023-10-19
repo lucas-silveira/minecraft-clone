@@ -7,19 +7,57 @@
 #include <stb/stb_image.h>
 #include "shader.hpp"
 
+// Settings
 const unsigned int SCREEN_WIDTH = 1280;
 const unsigned int SCREEN_HEIGHT = 720;
 
+// Time
 float deltaTime = 0.f;
 float lastFrame = 0.f;
 
+// Camera
 glm::vec3 cameraPos = glm::vec3(0.f, 16.f, 3.f);
 glm::vec3 cameraFront = glm::vec3(0.f, 0.f, -1.f);
 glm::vec3 cameraUp = glm::vec3(0.f, 1.f, 0.f);
+bool firstMouse = true;
+float fov = 45.f;
+float yaw = -90.f;
+float pitch = 0.f;
+float lastMouseX = SCREEN_WIDTH / 2.f;
+float lastMouseY = SCREEN_HEIGHT / 2.f;
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
+}
+
+void mouseCallback(GLFWwindow* window, double xpos, double ypos)
+{
+    // Avoid camera jump to the mouse position from the center
+    if (firstMouse)
+    {
+        lastMouseX = xpos;
+        lastMouseY = ypos;
+        firstMouse = false;
+    }
+
+    float xoffset = xpos - lastMouseX;
+    float yoffset = lastMouseY - ypos; // reversed: y ranges from bottom to top
+    lastMouseX = xpos;
+    lastMouseY = ypos;
+
+    float sensitivity = 0.05f; // avoid strong movements
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+
+    yaw += xoffset;
+    pitch = glm::clamp(pitch + yoffset, -89.f, 89.f); // constraint the vertical movement
+
+    glm::vec3 direction;
+    direction.x = std::cos(glm::radians(yaw)) * std::cos(glm::radians(pitch));
+    direction.y = std::sin(glm::radians(pitch));
+    direction.z = std::sin(glm::radians(yaw)) * std::cos(glm::radians(pitch));
+    cameraFront = glm::normalize(direction);
 }
 
 void processInput(GLFWwindow* window)
@@ -36,6 +74,9 @@ void processInput(GLFWwindow* window)
         cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    
+    // Fix movement at the ground level (xz plane)
+    //cameraPos.y = 0.0f;
 }
 
 glm::mat4 makeModelMatrix(glm::vec3& pos)
@@ -83,6 +124,8 @@ int main(void)
 
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+    glfwSetCursorPosCallback(window, mouseCallback);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     gladLoadGL(glfwGetProcAddress);
 
@@ -205,13 +248,31 @@ int main(void)
             {
                 for (int x = 0; x < 16; x++)
                 {
-                    glm::vec3 pos(x, y, -z);
+                    glm::vec3 pos(x, y, z);
                     glm::mat4 model = makeModelMatrix(pos);
                     shaderProgram.setMat4("model", model);
                     glDrawArrays(GL_TRIANGLES, 0, 36);
                 }
             }
         }
+        // Sphere
+        /*int planetRadius = 16;
+        for (int x = -planetRadius; x < planetRadius; x++)
+        {
+            for (int y = -planetRadius; y < planetRadius; y++)
+            {
+                for (int z = -planetRadius; z < planetRadius; z++)
+                {
+                    float mag = std::sqrt(x * x + y * y + z * z);
+                    if (mag > planetRadius) continue;
+
+                    glm::vec3 pos(x, y, z);
+                    glm::mat4 model = makeModelMatrix(pos);
+                    shaderProgram.setMat4("model", model);
+                    glDrawArrays(GL_TRIANGLES, 0, 36);
+                }
+            }
+        }*/
         glBindVertexArray(0);
 
         glfwSwapBuffers(window);
