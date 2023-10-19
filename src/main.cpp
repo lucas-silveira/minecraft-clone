@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/noise.hpp>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 #include "shader.hpp"
@@ -16,7 +17,7 @@ float deltaTime = 0.f;
 float lastFrame = 0.f;
 
 // Camera
-glm::vec3 cameraPos = glm::vec3(0.f, 16.f, 3.f);
+glm::vec3 cameraPos = glm::vec3(0.f, 10.f, 45.f);
 glm::vec3 cameraFront = glm::vec3(0.f, 0.f, -1.f);
 glm::vec3 cameraUp = glm::vec3(0.f, 1.f, 0.f);
 bool firstMouse = true;
@@ -25,6 +26,13 @@ float yaw = -90.f;
 float pitch = 0.f;
 float lastMouseX = SCREEN_WIDTH / 2.f;
 float lastMouseY = SCREEN_HEIGHT / 2.f;
+
+// World
+const float BLOCK_SIZE = 0.5f;
+const unsigned int CHUNK_SIZE = 16;
+typedef struct {
+    bool active;
+} block;
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
@@ -65,7 +73,7 @@ void processInput(GLFWwindow* window)
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    float cameraSpeed = 2.5f * deltaTime;
+    float cameraSpeed = 5.5f * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         cameraPos += cameraSpeed * cameraFront;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -102,6 +110,33 @@ glm::mat4 makeProjectionMatrix()
     return projection;
 }
 
+block*** makeChunk()
+{
+    block*** blocks = new block**[CHUNK_SIZE];
+    for (int x = 0; x < CHUNK_SIZE; x++)
+    {
+        blocks[x] = new block*[CHUNK_SIZE];
+        for (int y = 0; y < CHUNK_SIZE; y++)
+        {
+            blocks[x][y] = new block[CHUNK_SIZE];
+            for (int z = 0; z < CHUNK_SIZE; z++)
+                blocks[x][y][z].active = false;
+        }
+    }
+    return blocks;
+}
+
+void deleteChunk(block*** chunk)
+{
+    for (int i = 0; i < CHUNK_SIZE; ++i) {
+        for (int j = 0; j < CHUNK_SIZE; ++j) {
+            delete[] chunk[i][j];
+        }
+        delete[] chunk[i];
+    }
+    delete[] chunk;
+}
+
 int main(void)
 {
     if (!glfwInit())
@@ -133,65 +168,111 @@ int main(void)
     Shader shaderProgram("shaders/shader.vert", "shaders/shader.frag");
 
     float vertices[] = {
-         -0.5f, -0.5f, -0.5f,  0.f,  0.f,
-          0.5f, -0.5f, -0.5f,  1.0f, 0.f,
-          0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-          0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         -0.5f,  0.5f, -0.5f,  0.f,  1.0f,
-         -0.5f, -0.5f, -0.5f,  0.f,  0.f,
+        -BLOCK_SIZE,  -BLOCK_SIZE,  -BLOCK_SIZE,
+         BLOCK_SIZE,  -BLOCK_SIZE,  -BLOCK_SIZE,
+         BLOCK_SIZE,   BLOCK_SIZE,  -BLOCK_SIZE,
+         BLOCK_SIZE,   BLOCK_SIZE,  -BLOCK_SIZE,
+        -BLOCK_SIZE,   BLOCK_SIZE,  -BLOCK_SIZE,
+        -BLOCK_SIZE,  -BLOCK_SIZE,  -BLOCK_SIZE,
 
-         -0.5f, -0.5f,  0.5f,  0.f,  0.f,
-          0.5f, -0.5f,  0.5f,  1.0f, 0.f,
-          0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-          0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-         -0.5f,  0.5f,  0.5f,  0.f,  1.0f,
-         -0.5f, -0.5f,  0.5f,  0.f,  0.f,
+        -BLOCK_SIZE,  -BLOCK_SIZE,   BLOCK_SIZE,
+         BLOCK_SIZE,  -BLOCK_SIZE,   BLOCK_SIZE,
+         BLOCK_SIZE,   BLOCK_SIZE,   BLOCK_SIZE,
+         BLOCK_SIZE,   BLOCK_SIZE,   BLOCK_SIZE,
+        -BLOCK_SIZE,   BLOCK_SIZE,   BLOCK_SIZE,
+        -BLOCK_SIZE,  -BLOCK_SIZE,   BLOCK_SIZE,
 
-         -0.5f,  0.5f,  0.5f,  1.0f, 0.f,
-         -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         -0.5f, -0.5f, -0.5f,  0.f,  1.0f,
-         -0.5f, -0.5f, -0.5f,  0.f,  1.0f,
-         -0.5f, -0.5f,  0.5f,  0.f,  0.f,
-         -0.5f,  0.5f,  0.5f,  1.0f, 0.f,
+        -BLOCK_SIZE,   BLOCK_SIZE,   BLOCK_SIZE,
+        -BLOCK_SIZE,   BLOCK_SIZE,  -BLOCK_SIZE,
+        -BLOCK_SIZE,  -BLOCK_SIZE,  -BLOCK_SIZE,
+        -BLOCK_SIZE,  -BLOCK_SIZE,  -BLOCK_SIZE,
+        -BLOCK_SIZE,  -BLOCK_SIZE,   BLOCK_SIZE,
+        -BLOCK_SIZE,   BLOCK_SIZE,   BLOCK_SIZE,
 
-          0.5f,  0.5f,  0.5f,  1.0f, 0.f,
-          0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-          0.5f, -0.5f, -0.5f,  0.f,  1.0f,
-          0.5f, -0.5f, -0.5f,  0.f,  1.0f,
-          0.5f, -0.5f,  0.5f,  0.f,  0.f,
-          0.5f,  0.5f,  0.5f,  1.0f, 0.f,
+         BLOCK_SIZE,   BLOCK_SIZE,   BLOCK_SIZE,
+         BLOCK_SIZE,   BLOCK_SIZE,  -BLOCK_SIZE,
+         BLOCK_SIZE,  -BLOCK_SIZE,  -BLOCK_SIZE,
+         BLOCK_SIZE,  -BLOCK_SIZE,  -BLOCK_SIZE,
+         BLOCK_SIZE,  -BLOCK_SIZE,   BLOCK_SIZE,
+         BLOCK_SIZE,   BLOCK_SIZE,   BLOCK_SIZE,
 
-         -0.5f, -0.5f, -0.5f,  0.f,  1.0f,
-          0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-          0.5f, -0.5f,  0.5f,  1.0f, 0.f,
-          0.5f, -0.5f,  0.5f,  1.0f, 0.f,
-         -0.5f, -0.5f,  0.5f,  0.f,  0.f,
-         -0.5f, -0.5f, -0.5f,  0.f,  1.0f,
+        -BLOCK_SIZE,  -BLOCK_SIZE,  -BLOCK_SIZE,
+         BLOCK_SIZE,  -BLOCK_SIZE,  -BLOCK_SIZE,
+         BLOCK_SIZE,  -BLOCK_SIZE,   BLOCK_SIZE,
+         BLOCK_SIZE,  -BLOCK_SIZE,   BLOCK_SIZE,
+        -BLOCK_SIZE,  -BLOCK_SIZE,   BLOCK_SIZE,
+        -BLOCK_SIZE,  -BLOCK_SIZE,  -BLOCK_SIZE,
 
-         -0.5f,  0.5f, -0.5f,  0.f,  1.0f,
-          0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-          0.5f,  0.5f,  0.5f,  1.0f, 0.f,
-          0.5f,  0.5f,  0.5f,  1.0f, 0.f,
-         -0.5f,  0.5f,  0.5f,  0.f,  0.f,
-         -0.5f,  0.5f, -0.5f,  0.f,  1.0f
+        -BLOCK_SIZE,   BLOCK_SIZE,  -BLOCK_SIZE,
+         BLOCK_SIZE,   BLOCK_SIZE,  -BLOCK_SIZE,
+         BLOCK_SIZE,   BLOCK_SIZE,   BLOCK_SIZE,
+         BLOCK_SIZE,   BLOCK_SIZE,   BLOCK_SIZE,
+        -BLOCK_SIZE,   BLOCK_SIZE,   BLOCK_SIZE,
+        -BLOCK_SIZE,   BLOCK_SIZE,  -BLOCK_SIZE
+    };
+    float texCoords[] = {
+        0.f,  0.f,
+        1.0f, 0.f,
+        1.0f, 1.0f,
+        1.0f, 1.0f,
+        0.f,  1.0f,
+        0.f,  0.f,
+
+        0.f,  0.f,
+        1.0f, 0.f,
+        1.0f, 1.0f,
+        1.0f, 1.0f,
+        0.f,  1.0f,
+        0.f,  0.f,
+
+        1.0f, 0.f,
+        1.0f, 1.0f,
+        0.f,  1.0f,
+        0.f,  1.0f,
+        0.f,  0.f,
+        1.0f, 0.f,
+
+        1.0f, 0.f,
+        1.0f, 1.0f,
+        0.f,  1.0f,
+        0.f,  1.0f,
+        0.f,  0.f,
+        1.0f, 0.f,
+
+        0.f,  1.0f,
+        1.0f, 1.0f,
+        1.0f, 0.f,
+        1.0f, 0.f,
+        0.f,  0.f,
+        0.f,  1.0f,
+
+        0.f,  1.0f,
+        1.0f, 1.0f,
+        1.0f, 0.f,
+        1.0f, 0.f,
+        0.f,  0.f,
+        0.f,  1.0f
     };
 
-    unsigned int VBO, VAO;
-    glGenBuffers(1, &VBO);
+    unsigned int VBOs[2], VAO;
+    glGenBuffers(2, VBOs);
     glGenVertexArrays(1, &VAO);
 
     glBindVertexArray(VAO);
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    /* Position */
+    glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-
-    // texture coord attribute
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    // Texture
+    glBindBuffer(GL_ARRAY_BUFFER, VBOs[1]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(texCoords), texCoords, GL_STATIC_DRAW);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(1);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
 
     // Load texture
     unsigned int texture;
@@ -240,39 +321,22 @@ int main(void)
         glBindTexture(GL_TEXTURE_2D, texture);
         glBindVertexArray(VAO);
 
-
-        unsigned int chunkSize = 16 * 16 * 16;
-        for (int y = 0; y < 16; y++)
+        for (int x = 0; x < CHUNK_SIZE; x++)
         {
-            for (int z = 0; z < 16; z++)
+            for (int z = 0; z < CHUNK_SIZE; z++)
             {
-                for (int x = 0; x < 16; x++)
+                float height = ((glm::simplex(glm::vec2(x / 16.f, z / 16.f)) + 1) / 2) * CHUNK_SIZE; // generate simplex noise, clamp to [0,1] and multiply by chunk size
+                for (int y = 0; y < height; y++)
                 {
-                    glm::vec3 pos(x, y, z);
+                    glm::vec3 pos(x, (float)y, z);
                     glm::mat4 model = makeModelMatrix(pos);
                     shaderProgram.setMat4("model", model);
                     glDrawArrays(GL_TRIANGLES, 0, 36);
                 }
+
             }
         }
-        // Sphere
-        /*int planetRadius = 16;
-        for (int x = -planetRadius; x < planetRadius; x++)
-        {
-            for (int y = -planetRadius; y < planetRadius; y++)
-            {
-                for (int z = -planetRadius; z < planetRadius; z++)
-                {
-                    float mag = std::sqrt(x * x + y * y + z * z);
-                    if (mag > planetRadius) continue;
 
-                    glm::vec3 pos(x, y, z);
-                    glm::mat4 model = makeModelMatrix(pos);
-                    shaderProgram.setMat4("model", model);
-                    glDrawArrays(GL_TRIANGLES, 0, 36);
-                }
-            }
-        }*/
         glBindVertexArray(0);
 
         glfwSwapBuffers(window);
@@ -280,7 +344,7 @@ int main(void)
     }
 
     glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(2, VBOs);
     shaderProgram.remove();
 
     glfwTerminate();
