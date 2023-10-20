@@ -136,8 +136,8 @@
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\chunk.hpp" />
-    <ClInclude Include="src\shader.hpp" />
+    <ClInclude Include="src\chunk.h" />
+    <ClInclude Include="src\shader.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.frag" />

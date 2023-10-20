@@ -1,4 +1,4 @@
-#include "chunk.hpp"
+#include "chunk.h"
 
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
@@ -16,7 +16,7 @@ bool*** MakeChunk(void)
         {
             chunk[x][y] = new bool[kChunkSize];
             for (int z = 0; z < kChunkSize; z++)
-                chunk[x][y][z] = false;
+                chunk[x][y][z] = true;
         }
     }
     return chunk;
@@ -33,61 +33,60 @@ void DeleteChunk(bool*** chunk)
     delete[] chunk;
 }
 
-BlockMesh MakeBlockMesh(float x, float y, float z)
+BlockMesh MakeBlockMesh(
+    float x, float y, float z,
+    bool left_neighbor, bool right_neighbor,
+    bool bottom_neighbor, bool top_neighbor,
+    bool back_neighbor, bool front_neighbor
+)
 {
-    BlockMesh b = {
-        {
-            x - kBlockSize, y - kBlockSize, z - kBlockSize,  0.0f, 0.0f,
-            x + kBlockSize, y - kBlockSize, z - kBlockSize,  1.0f, 0.0f,
-            x + kBlockSize, y + kBlockSize, z - kBlockSize,  1.0f, 1.0f,
-            x - kBlockSize, y + kBlockSize, z - kBlockSize,  0.0f, 1.0f,
-
-            x - kBlockSize, y - kBlockSize, z + kBlockSize,  0.0f, 0.0f,
-            x + kBlockSize, y - kBlockSize, z + kBlockSize,  1.0f, 0.0f,
-            x + kBlockSize, y + kBlockSize, z + kBlockSize,  1.0f, 1.0f,
-            x - kBlockSize, y + kBlockSize, z + kBlockSize,  0.0f, 1.0f,
-
-            x - kBlockSize, y + kBlockSize, z - kBlockSize,  0.0f, 0.0f,
-            x - kBlockSize, y - kBlockSize, z - kBlockSize,  1.0f, 0.0f,
-            x - kBlockSize, y - kBlockSize, z + kBlockSize,  1.0f, 1.0f,
-            x - kBlockSize, y + kBlockSize, z + kBlockSize,  0.0f, 1.0f,
-
-            x + kBlockSize, y - kBlockSize, z - kBlockSize,  0.0f, 0.0f,
-            x + kBlockSize, y + kBlockSize, z - kBlockSize,  1.0f, 0.0f,
-            x + kBlockSize, y + kBlockSize, z + kBlockSize,  1.0f, 1.0f,
-            x + kBlockSize, y - kBlockSize, z + kBlockSize,  0.0f, 1.0f,
-
-            x - kBlockSize, y - kBlockSize, z - kBlockSize,  0.0f, 0.0f,
-            x + kBlockSize, y - kBlockSize, z - kBlockSize,  1.0f, 0.0f,
-            x + kBlockSize, y - kBlockSize, z + kBlockSize,  1.0f, 1.0f,
-            x - kBlockSize, y - kBlockSize, z + kBlockSize,  0.0f, 1.0f,
-
-            x + kBlockSize, y + kBlockSize, z - kBlockSize,  0.0f, 0.0f,
-            x - kBlockSize, y + kBlockSize, z - kBlockSize,  1.0f, 0.0f,
-            x - kBlockSize, y + kBlockSize, z + kBlockSize,  1.0f, 1.0f,
-            x + kBlockSize, y + kBlockSize, z + kBlockSize,  0.0f, 1.0f,
-        },
-        {
-            // Back
-            0, 3, 2,
-            2, 1, 0,
-            // Front
-            4, 5, 6,
-            6, 7 ,4,
-            // Left
-            11, 8, 9,
-            9, 10, 11,
-            // Right
-            12, 13, 14,
-            14, 15, 12,
-            // Bottom
-            16, 17, 18,
-            18, 19, 16,
-            // Top
-            20, 21, 22,
-            22, 23, 20
-        }
+    BlockMesh b;
+    std::vector<float> vertices = {
+        // Back
+        x - kBlockSize, y - kBlockSize, z - kBlockSize,  0.0f, 0.0f,
+        x + kBlockSize, y - kBlockSize, z - kBlockSize,  1.0f, 0.0f,
+        x + kBlockSize, y + kBlockSize, z - kBlockSize,  1.0f, 1.0f,
+        x - kBlockSize, y + kBlockSize, z - kBlockSize,  0.0f, 1.0f,
+        // Front
+        x - kBlockSize, y - kBlockSize, z + kBlockSize,  0.0f, 0.0f,
+        x + kBlockSize, y - kBlockSize, z + kBlockSize,  1.0f, 0.0f,
+        x + kBlockSize, y + kBlockSize, z + kBlockSize,  1.0f, 1.0f,
+        x - kBlockSize, y + kBlockSize, z + kBlockSize,  0.0f, 1.0f,
+        // Left
+        x - kBlockSize, y + kBlockSize, z - kBlockSize,  0.0f, 0.0f,
+        x - kBlockSize, y - kBlockSize, z - kBlockSize,  1.0f, 0.0f,
+        x - kBlockSize, y - kBlockSize, z + kBlockSize,  1.0f, 1.0f,
+        x - kBlockSize, y + kBlockSize, z + kBlockSize,  0.0f, 1.0f,
+        // Right
+        x + kBlockSize, y - kBlockSize, z - kBlockSize,  0.0f, 0.0f,
+        x + kBlockSize, y + kBlockSize, z - kBlockSize,  1.0f, 0.0f,
+        x + kBlockSize, y + kBlockSize, z + kBlockSize,  1.0f, 1.0f,
+        x + kBlockSize, y - kBlockSize, z + kBlockSize,  0.0f, 1.0f,
+        // Bottom
+        x - kBlockSize, y - kBlockSize, z - kBlockSize,  0.0f, 0.0f,
+        x + kBlockSize, y - kBlockSize, z - kBlockSize,  1.0f, 0.0f,
+        x + kBlockSize, y - kBlockSize, z + kBlockSize,  1.0f, 1.0f,
+        x - kBlockSize, y - kBlockSize, z + kBlockSize,  0.0f, 1.0f,
+        // Top
+        x + kBlockSize, y + kBlockSize, z - kBlockSize,  0.0f, 0.0f,
+        x - kBlockSize, y + kBlockSize, z - kBlockSize,  1.0f, 0.0f,
+        x - kBlockSize, y + kBlockSize, z + kBlockSize,  1.0f, 1.0f,
+        x + kBlockSize, y + kBlockSize, z + kBlockSize,  0.0f, 1.0f,
     };
+    std::vector<unsigned> indices;
+
+    if (!back_neighbor) indices.insert(indices.end(), { 0, 3, 2, 2, 1, 0 });
+    if (!front_neighbor) indices.insert(indices.end(), { 4, 5, 6, 6, 7, 4 });
+
+    if (!left_neighbor) indices.insert(indices.end(), { 11, 8, 9, 9, 10, 11 });
+    if (!right_neighbor) indices.insert(indices.end(), { 12, 13, 14, 14, 15, 12 });
+
+    if (!bottom_neighbor) indices.insert(indices.end(), { 16, 17, 18, 18, 19, 16 });
+    if (!top_neighbor) indices.insert(indices.end(), { 20, 21, 22, 22, 23, 20 });
+    
+    b.vertices = vertices;
+    b.indices = indices;
+
     return b;
 }
 
@@ -99,14 +98,33 @@ ChunkMesh MakeChunkMesh(bool*** chunk)
             for (int z = 0; z < kChunkSize; z++)
             {
                 if (chunk[x][y][z] == false) continue;
-                BlockMesh blockMesh = MakeBlockMesh(x, y, z);
 
-                for (int i = 0; i < sizeof(blockMesh.indices) / sizeof(unsigned); i++)
+                bool left_neighbor = false, right_neighbor = false;
+                bool bottom_neighbor = false, top_neighbor = false;
+                bool back_neighbor = false, front_neighbor = false;
+
+                if (x > 0) left_neighbor = chunk[x - 1][y][z];
+                if (x < kChunkSize - 1) right_neighbor = chunk[x + 1][y][z];
+
+                if (y > 0) bottom_neighbor = chunk[x][y - 1][z];
+                if (y < kChunkSize - 1) top_neighbor = chunk[x][y + 1][z];
+
+                if (z > 0) back_neighbor = chunk[x][y][z - 1];
+                if (z < kChunkSize - 1) front_neighbor = chunk[x][y][z + 1];
+
+                BlockMesh blockMesh = MakeBlockMesh(
+                    x, y, z,
+                    left_neighbor, right_neighbor,
+                    bottom_neighbor, top_neighbor,
+                    back_neighbor, front_neighbor
+                );
+
+                for (int i = 0; i < blockMesh.indices.size(); i++)
                 {
                     chunk_mesh.indices.push_back(blockMesh.indices[i] + chunk_mesh.vertices.size() / 5);
                 }
                 
-                for (int i = 0; i < sizeof(blockMesh.vertices)/sizeof(float); i++)
+                for (int i = 0; i < blockMesh.vertices.size(); i++)
                 {
                     chunk_mesh.vertices.push_back(blockMesh.vertices[i]);
                 }

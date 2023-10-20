@@ -32,10 +32,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\shader.hpp">
+    <ClInclude Include="src\shader.h">
       <Filter>Source Files\shaders</Filter>
     </ClInclude>
-    <ClInclude Include="src\chunk.hpp">
+    <ClInclude Include="src\chunk.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

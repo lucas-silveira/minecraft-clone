@@ -8,8 +8,10 @@
 #include <stb/stb_image.h>
 #include <windows.h>
 
-#include "shader.hpp"
-#include "chunk.hpp"
+#include <iostream>
+
+#include "shader.h"
+#include "chunk.h"
 
 // Settings
 const unsigned int kScreenWidth = 1280;
@@ -159,7 +161,7 @@ int main(void)
     Shader shader_program("shaders/shader.vert", "shaders/shader.frag");
 
     bool*** chunk = MakeChunk();
-    ApplyNoise(chunk);
+    //ApplyNoise(chunk);
     ChunkMesh chunk_mesh = MakeChunkMesh(chunk);
     DeleteChunk(chunk);
 
