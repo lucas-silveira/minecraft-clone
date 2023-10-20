@@ -138,23 +138,25 @@ int main(void)
     glEnable(GL_DEPTH_TEST);
     Shader shaderProgram("shaders/shader.vert", "shaders/shader.frag");
 
-    block block = makeBlock(1.f, 1.f, 1.f);
+    bool*** chunk = makeChunk();
+    chunkMesh chunkMesh = makeChunkMesh(chunk);
 
-    unsigned int VBOs[2], VAO;
-    glGenBuffers(2, VBOs);
+    unsigned int VBO, EBO, VAO;
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
     glGenVertexArrays(1, &VAO);
 
     glBindVertexArray(VAO);
 
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, chunkMesh.vertices.size()*sizeof(float), &chunkMesh.vertices[0], GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, chunkMesh.indices.size()*sizeof(unsigned), &chunkMesh.indices[0], GL_STATIC_DRAW);
     /* Position */
-    glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(block.vertices), block.vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     // Texture
-    glBindBuffer(GL_ARRAY_BUFFER, VBOs[1]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(block.texCoords), block.texCoords, GL_STATIC_DRAW);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3*sizeof(float)));
     glEnableVertexAttribArray(1);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -206,28 +208,33 @@ int main(void)
         shaderProgram.setMat4("view", view);
         glm::mat4 projection = makeProjectionMatrix();
         shaderProgram.setMat4("projection", projection);
+        glm::vec3 pos(0.f, 0.f, 0.f);
+        glm::mat4 model = makeModelMatrix(pos);
+        shaderProgram.setMat4("model", model);
 
         glBindTexture(GL_TEXTURE_2D, texture);
         glBindVertexArray(VAO);
 
-        for (int x = 0; x < CHUNK_SIZE; x++)
-        {
-            for (int z = 0; z < CHUNK_SIZE; z++)
-            {
-                /*
-                    Generate simplex noise, clamp to [0,1] and multiply by chunk size.
-                */
-                float height = ((glm::simplex(glm::vec2(x / 16.f, z / 16.f)) + 1) / 2) * CHUNK_SIZE;
-                for (int y = 0; y < height; y++)
-                {
-                    glm::vec3 pos(x, (float)y, z);
-                    glm::mat4 model = makeModelMatrix(pos);
-                    shaderProgram.setMat4("model", model);
-                    glDrawArrays(GL_TRIANGLES, 0, 36);
-                }
+        glDrawElements(GL_TRIANGLES, 36*CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE, GL_UNSIGNED_INT, 0);
 
-            }
-        }
+        //for (int x = 0; x < CHUNK_SIZE; x++)
+        //{
+        //    for (int z = 0; z < CHUNK_SIZE; z++)
+        //    {
+        //        /*
+        //            Generate simplex noise, clamp to [0,1] and multiply by chunk size.
+        //        */
+        //        float height = ((glm::simplex(glm::vec2(x / 16.f, z / 16.f)) + 1) / 2) * CHUNK_SIZE;
+        //        for (int y = 0; y < height; y++)
+        //        {
+        //            glm::vec3 pos(x, (float)y, z);
+        //            glm::mat4 model = makeModelMatrix(pos);
+        //            shaderProgram.setMat4("model", model);
+        //            glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+        //        }
+
+        //    }
+        //}
 
         glBindVertexArray(0);
 
@@ -240,7 +247,7 @@ int main(void)
     }
 
     glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(2, VBOs);
+    glDeleteBuffers(1, &VBO);
     shaderProgram.remove();
 
     glfwTerminate();

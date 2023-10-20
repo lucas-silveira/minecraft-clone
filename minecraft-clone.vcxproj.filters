@@ -30,18 +30,12 @@
     <ClCompile Include="src\chunk.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\block.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\shader.hpp">
       <Filter>Source Files\shaders</Filter>
     </ClInclude>
     <ClInclude Include="src\chunk.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\block.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
