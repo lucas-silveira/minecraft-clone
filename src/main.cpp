@@ -107,6 +107,27 @@ glm::mat4 makeProjectionMatrix()
     return projection;
 }
 
+void applyNoise(bool*** chunk)
+{
+    for (int x = 0; x < CHUNK_SIZE; x++)
+    {
+        for (int z = 0; z < CHUNK_SIZE; z++)
+        {
+            /*
+                Generate simplex noise, clamp to [0,1] and multiply by chunk size.
+            */
+            float noise = glm::simplex(glm::vec2(x / 16.f, z / 16.f));
+            float height = ((noise + 1) / 2) * CHUNK_SIZE;
+            std::cout << height << std::endl;
+            for (int y = 0; y < height; y++)
+            {
+                chunk[x][y][z] = true;
+            }
+
+        }
+    }
+}
+
 
 int main(void)
 {
@@ -139,28 +160,9 @@ int main(void)
     Shader shaderProgram("shaders/shader.vert", "shaders/shader.frag");
 
     bool*** chunk = makeChunk();
+    applyNoise(chunk);
     chunkMesh chunkMesh = makeChunkMesh(chunk);
-
-    unsigned int VBO, EBO, VAO;
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
-    glGenVertexArrays(1, &VAO);
-
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, chunkMesh.vertices.size()*sizeof(float), &chunkMesh.vertices[0], GL_STATIC_DRAW);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, chunkMesh.indices.size()*sizeof(unsigned), &chunkMesh.indices[0], GL_STATIC_DRAW);
-    /* Position */
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    // Texture
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3*sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+    deleteChunk(chunk);
 
     // Load texture
     unsigned int texture;
@@ -208,33 +210,18 @@ int main(void)
         shaderProgram.setMat4("view", view);
         glm::mat4 projection = makeProjectionMatrix();
         shaderProgram.setMat4("projection", projection);
-        glm::vec3 pos(0.f, 0.f, 0.f);
-        glm::mat4 model = makeModelMatrix(pos);
-        shaderProgram.setMat4("model", model);
 
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glBindVertexArray(VAO);
+        for (int x = 0; x < 5*CHUNK_SIZE; x += CHUNK_SIZE)
+        {
+            for (int z = 0; z < 5*CHUNK_SIZE; z += CHUNK_SIZE)
+            {
+                glm::vec3 pos(x, 0, z);
+                glm::mat4 model = makeModelMatrix(pos);
+                shaderProgram.setMat4("model", model);
 
-        glDrawElements(GL_TRIANGLES, 36*CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE, GL_UNSIGNED_INT, 0);
-
-        //for (int x = 0; x < CHUNK_SIZE; x++)
-        //{
-        //    for (int z = 0; z < CHUNK_SIZE; z++)
-        //    {
-        //        /*
-        //            Generate simplex noise, clamp to [0,1] and multiply by chunk size.
-        //        */
-        //        float height = ((glm::simplex(glm::vec2(x / 16.f, z / 16.f)) + 1) / 2) * CHUNK_SIZE;
-        //        for (int y = 0; y < height; y++)
-        //        {
-        //            glm::vec3 pos(x, (float)y, z);
-        //            glm::mat4 model = makeModelMatrix(pos);
-        //            shaderProgram.setMat4("model", model);
-        //            glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-        //        }
-
-        //    }
-        //}
+                renderChunk(chunkMesh, texture);
+            }
+        }
 
         glBindVertexArray(0);
 
@@ -246,8 +233,7 @@ int main(void)
         //if (deltaTime < msPerFrame) Sleep((msPerFrame - deltaTime)*1000.f);
     }
 
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
+    deleteChunkMesh(chunkMesh);
     shaderProgram.remove();
 
     glfwTerminate();

@@ -11,6 +11,8 @@ typedef struct {
     unsigned indices[36];
 } blockMesh;
 typedef struct {
+    unsigned ID;
+    unsigned buffers[2];
     std::vector<float> vertices;
     std::vector<unsigned> indices;
 } chunkMesh;
@@ -19,5 +21,7 @@ bool*** makeChunk(void);
 void deleteChunk(bool*** chunk);
 blockMesh makeBlockMesh(float x, float y, float z);
 chunkMesh makeChunkMesh(bool*** chunk);
+void renderChunk(chunkMesh chunk, unsigned texture);
+void deleteChunkMesh(chunkMesh chunk);
 
 #endif
