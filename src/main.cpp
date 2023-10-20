@@ -6,11 +6,15 @@
 #include <glm/gtc/noise.hpp>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
+#include <windows.h>
+
 #include "shader.hpp"
+#include "chunk.hpp"
 
 // Settings
 const unsigned int SCREEN_WIDTH = 1280;
 const unsigned int SCREEN_HEIGHT = 720;
+const unsigned int FPS = 60;
 
 // Time
 float deltaTime = 0.f;
@@ -26,13 +30,6 @@ float yaw = -90.f;
 float pitch = 0.f;
 float lastMouseX = SCREEN_WIDTH / 2.f;
 float lastMouseY = SCREEN_HEIGHT / 2.f;
-
-// World
-const float BLOCK_SIZE = 0.5f;
-const unsigned int CHUNK_SIZE = 16;
-typedef struct {
-    bool active;
-} block;
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
@@ -110,32 +107,6 @@ glm::mat4 makeProjectionMatrix()
     return projection;
 }
 
-block*** makeChunk()
-{
-    block*** blocks = new block**[CHUNK_SIZE];
-    for (int x = 0; x < CHUNK_SIZE; x++)
-    {
-        blocks[x] = new block*[CHUNK_SIZE];
-        for (int y = 0; y < CHUNK_SIZE; y++)
-        {
-            blocks[x][y] = new block[CHUNK_SIZE];
-            for (int z = 0; z < CHUNK_SIZE; z++)
-                blocks[x][y][z].active = false;
-        }
-    }
-    return blocks;
-}
-
-void deleteChunk(block*** chunk)
-{
-    for (int i = 0; i < CHUNK_SIZE; ++i) {
-        for (int j = 0; j < CHUNK_SIZE; ++j) {
-            delete[] chunk[i][j];
-        }
-        delete[] chunk[i];
-    }
-    delete[] chunk;
-}
 
 int main(void)
 {
@@ -167,92 +138,7 @@ int main(void)
     glEnable(GL_DEPTH_TEST);
     Shader shaderProgram("shaders/shader.vert", "shaders/shader.frag");
 
-    float vertices[] = {
-        -BLOCK_SIZE,  -BLOCK_SIZE,  -BLOCK_SIZE,
-         BLOCK_SIZE,  -BLOCK_SIZE,  -BLOCK_SIZE,
-         BLOCK_SIZE,   BLOCK_SIZE,  -BLOCK_SIZE,
-         BLOCK_SIZE,   BLOCK_SIZE,  -BLOCK_SIZE,
-        -BLOCK_SIZE,   BLOCK_SIZE,  -BLOCK_SIZE,
-        -BLOCK_SIZE,  -BLOCK_SIZE,  -BLOCK_SIZE,
-
-        -BLOCK_SIZE,  -BLOCK_SIZE,   BLOCK_SIZE,
-         BLOCK_SIZE,  -BLOCK_SIZE,   BLOCK_SIZE,
-         BLOCK_SIZE,   BLOCK_SIZE,   BLOCK_SIZE,
-         BLOCK_SIZE,   BLOCK_SIZE,   BLOCK_SIZE,
-        -BLOCK_SIZE,   BLOCK_SIZE,   BLOCK_SIZE,
-        -BLOCK_SIZE,  -BLOCK_SIZE,   BLOCK_SIZE,
-
-        -BLOCK_SIZE,   BLOCK_SIZE,   BLOCK_SIZE,
-        -BLOCK_SIZE,   BLOCK_SIZE,  -BLOCK_SIZE,
-        -BLOCK_SIZE,  -BLOCK_SIZE,  -BLOCK_SIZE,
-        -BLOCK_SIZE,  -BLOCK_SIZE,  -BLOCK_SIZE,
-        -BLOCK_SIZE,  -BLOCK_SIZE,   BLOCK_SIZE,
-        -BLOCK_SIZE,   BLOCK_SIZE,   BLOCK_SIZE,
-
-         BLOCK_SIZE,   BLOCK_SIZE,   BLOCK_SIZE,
-         BLOCK_SIZE,   BLOCK_SIZE,  -BLOCK_SIZE,
-         BLOCK_SIZE,  -BLOCK_SIZE,  -BLOCK_SIZE,
-         BLOCK_SIZE,  -BLOCK_SIZE,  -BLOCK_SIZE,
-         BLOCK_SIZE,  -BLOCK_SIZE,   BLOCK_SIZE,
-         BLOCK_SIZE,   BLOCK_SIZE,   BLOCK_SIZE,
-
-        -BLOCK_SIZE,  -BLOCK_SIZE,  -BLOCK_SIZE,
-         BLOCK_SIZE,  -BLOCK_SIZE,  -BLOCK_SIZE,
-         BLOCK_SIZE,  -BLOCK_SIZE,   BLOCK_SIZE,
-         BLOCK_SIZE,  -BLOCK_SIZE,   BLOCK_SIZE,
-        -BLOCK_SIZE,  -BLOCK_SIZE,   BLOCK_SIZE,
-        -BLOCK_SIZE,  -BLOCK_SIZE,  -BLOCK_SIZE,
-
-        -BLOCK_SIZE,   BLOCK_SIZE,  -BLOCK_SIZE,
-         BLOCK_SIZE,   BLOCK_SIZE,  -BLOCK_SIZE,
-         BLOCK_SIZE,   BLOCK_SIZE,   BLOCK_SIZE,
-         BLOCK_SIZE,   BLOCK_SIZE,   BLOCK_SIZE,
-        -BLOCK_SIZE,   BLOCK_SIZE,   BLOCK_SIZE,
-        -BLOCK_SIZE,   BLOCK_SIZE,  -BLOCK_SIZE
-    };
-    float texCoords[] = {
-        0.f,  0.f,
-        1.0f, 0.f,
-        1.0f, 1.0f,
-        1.0f, 1.0f,
-        0.f,  1.0f,
-        0.f,  0.f,
-
-        0.f,  0.f,
-        1.0f, 0.f,
-        1.0f, 1.0f,
-        1.0f, 1.0f,
-        0.f,  1.0f,
-        0.f,  0.f,
-
-        1.0f, 0.f,
-        1.0f, 1.0f,
-        0.f,  1.0f,
-        0.f,  1.0f,
-        0.f,  0.f,
-        1.0f, 0.f,
-
-        1.0f, 0.f,
-        1.0f, 1.0f,
-        0.f,  1.0f,
-        0.f,  1.0f,
-        0.f,  0.f,
-        1.0f, 0.f,
-
-        0.f,  1.0f,
-        1.0f, 1.0f,
-        1.0f, 0.f,
-        1.0f, 0.f,
-        0.f,  0.f,
-        0.f,  1.0f,
-
-        0.f,  1.0f,
-        1.0f, 1.0f,
-        1.0f, 0.f,
-        1.0f, 0.f,
-        0.f,  0.f,
-        0.f,  1.0f
-    };
+    block block = makeBlock(1.f, 1.f, 1.f);
 
     unsigned int VBOs[2], VAO;
     glGenBuffers(2, VBOs);
@@ -262,12 +148,12 @@ int main(void)
 
     /* Position */
     glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(block.vertices), block.vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     // Texture
     glBindBuffer(GL_ARRAY_BUFFER, VBOs[1]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(texCoords), texCoords, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(block.texCoords), block.texCoords, GL_STATIC_DRAW);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(1);
 
@@ -306,6 +192,9 @@ int main(void)
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
+        // Show frame rate
+        //std::cout << 1.f / deltaTime << std::endl;
+
         processInput(window);
 
         glClearColor(0.529f, 0.808f, 0.922f, 1.f);
@@ -325,7 +214,10 @@ int main(void)
         {
             for (int z = 0; z < CHUNK_SIZE; z++)
             {
-                float height = ((glm::simplex(glm::vec2(x / 16.f, z / 16.f)) + 1) / 2) * CHUNK_SIZE; // generate simplex noise, clamp to [0,1] and multiply by chunk size
+                /*
+                    Generate simplex noise, clamp to [0,1] and multiply by chunk size.
+                */
+                float height = ((glm::simplex(glm::vec2(x / 16.f, z / 16.f)) + 1) / 2) * CHUNK_SIZE;
                 for (int y = 0; y < height; y++)
                 {
                     glm::vec3 pos(x, (float)y, z);
@@ -341,6 +233,10 @@ int main(void)
 
         glfwSwapBuffers(window);
         glfwPollEvents();
+
+        // Limit frame rate
+        //float msPerFrame = 1.f / FPS;
+        //if (deltaTime < msPerFrame) Sleep((msPerFrame - deltaTime)*1000.f);
     }
 
     glDeleteVertexArrays(1, &VAO);
