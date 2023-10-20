@@ -9,6 +9,7 @@
 #include <windows.h>
 
 #include <iostream>
+#include <sstream>
 
 #include "shader.h"
 #include "chunk.h"
@@ -17,6 +18,8 @@
 const unsigned int kScreenWidth = 1280;
 const unsigned int kScreenHeight = 720;
 const unsigned int kFps = 60;
+
+GLFWwindow* window;
 
 // Time
 float delta_time = 0.f;
@@ -67,7 +70,7 @@ void MouseCallback(GLFWwindow* window, double xpos, double ypos)
     camera_front = glm::normalize(direction);
 }
 
-void ProcessInput(GLFWwindow* window)
+void ProcessInput()
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
@@ -92,12 +95,12 @@ glm::mat4 MakeModelMatrix(glm::vec3& pos)
     model = glm::translate(model, pos);
     return model;
 }
-glm::mat4 MakeViewMatrix()
+glm::mat4 MakeViewMatrix(void)
 {
     glm::mat4 view = glm::lookAt(camera_pos, camera_pos + camera_front, camera_up);
     return view;
 }
-glm::mat4 MakeProjectionMatrix()
+glm::mat4 MakeProjectionMatrix(void)
 {
     glm::mat4 projection;
     float fov = glm::radians(45.f);
@@ -106,6 +109,14 @@ glm::mat4 MakeProjectionMatrix()
     float far_plane = 100.f;
     projection = glm::perspective(fov, aspect_ratio, near_plane, far_plane);
     return projection;
+}
+
+void ShowFps()
+{
+    float fps = 1.f / delta_time;
+    std::stringstream ss;
+    ss << "Minecraft Clone" << " " << "[" << fps << " FPS]";
+    glfwSetWindowTitle(window, ss.str().c_str());
 }
 
 void ApplyNoise(bool*** chunk)
@@ -143,7 +154,7 @@ int main(void)
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-    GLFWwindow* window = glfwCreateWindow(kScreenWidth, kScreenHeight, "Hello World", NULL, NULL);
+    window = glfwCreateWindow(kScreenWidth, kScreenHeight, "Minecraft Clone", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -161,7 +172,7 @@ int main(void)
     Shader shader_program("shaders/shader.vert", "shaders/shader.frag");
 
     bool*** chunk = MakeChunk();
-    //ApplyNoise(chunk);
+    ApplyNoise(chunk);
     ChunkMesh chunk_mesh = MakeChunkMesh(chunk);
     DeleteChunk(chunk);
 
@@ -197,10 +208,8 @@ int main(void)
         delta_time = current_frame - last_frame;
         last_frame = current_frame;
 
-        // Show frame rate
-        //std::cout << 1.f / delta_time << std::endl;
-
-        ProcessInput(window);
+        ShowFps();
+        ProcessInput();
 
         glClearColor(0.529f, 0.808f, 0.922f, 1.f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
