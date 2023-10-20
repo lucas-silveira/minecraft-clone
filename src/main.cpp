@@ -119,28 +119,6 @@ void ShowFps()
     glfwSetWindowTitle(window, ss.str().c_str());
 }
 
-void ApplyNoise(bool*** chunk)
-{
-    for (int x = 0; x < kChunkSize; x++)
-    {
-        for (int z = 0; z < kChunkSize; z++)
-        {
-            /*
-                Generate simplex noise, clamp to [0,1] and multiply by chunk size.
-            */
-            float noise = glm::simplex(glm::vec2(x / 16.f, z / 16.f));
-            float height = ((noise + 1) / 2) * kChunkSize;
-            std::cout << height << std::endl;
-            for (int y = 0; y < height; y++)
-            {
-                chunk[x][y][z] = true;
-            }
-
-        }
-    }
-}
-
-
 int main(void)
 {
     if (!glfwInit())
@@ -150,9 +128,9 @@ int main(void)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
+    #ifdef __APPLE__
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    #endif
 
     window = glfwCreateWindow(kScreenWidth, kScreenHeight, "Minecraft Clone", NULL, NULL);
     if (!window)
@@ -171,10 +149,7 @@ int main(void)
     glEnable(GL_DEPTH_TEST);
     Shader shader_program("shaders/shader.vert", "shaders/shader.frag");
 
-    bool*** chunk = MakeChunk();
-    ApplyNoise(chunk);
-    ChunkMesh chunk_mesh = MakeChunkMesh(chunk);
-    DeleteChunk(chunk);
+    Terrain terrain = MakeTerrain();
 
     // Load texture
     unsigned int texture;
@@ -221,16 +196,16 @@ int main(void)
         glm::mat4 projection = MakeProjectionMatrix();
         shader_program.setMat4("projection", projection);
 
-        const unsigned kTerrainSize = 1;
-        for (int x = 0; x < kTerrainSize*kChunkSize; x += kChunkSize)
+        int i = 0;
+        for (int x = 0; x < kTerrainSize; x++)
         {
-            for (int z = 0; z < kTerrainSize*kChunkSize; z += kChunkSize)
+            for (int z = 0; z < kTerrainSize; z++)
             {
-                glm::vec3 pos(x, 0, z);
+                glm::vec3 pos(x*kChunkSize, 0, z*kChunkSize);
                 glm::mat4 model = MakeModelMatrix(pos);
                 shader_program.setMat4("model", model);
 
-                RenderChunk(chunk_mesh, texture);
+                RenderChunk(terrain.chunks[i++], texture);
             }
         }
 
@@ -244,7 +219,7 @@ int main(void)
         //if (delta_time < msPerFrame) Sleep((msPerFrame - delta_time)*1000.f);
     }
 
-    DeleteChunkMesh(chunk_mesh);
+    DeleteTerrain(terrain);
     shader_program.remove();
 
     glfwTerminate();

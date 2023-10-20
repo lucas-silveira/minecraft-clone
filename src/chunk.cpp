@@ -2,9 +2,14 @@
 
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/noise.hpp>
+
+#include <vector>
 
 const float kBlockSize = 0.5f;
-const unsigned int kChunkSize = 16;
+const unsigned kChunkSize = 16;
+const unsigned kTerrainSize = 5;
 
 bool*** MakeChunk(void)
 {
@@ -16,7 +21,7 @@ bool*** MakeChunk(void)
         {
             chunk[x][y] = new bool[kChunkSize];
             for (int z = 0; z < kChunkSize; z++)
-                chunk[x][y][z] = true;
+                chunk[x][y][z] = false;
         }
     }
     return chunk;
@@ -164,4 +169,43 @@ void RenderChunk(ChunkMesh chunk, unsigned texture)
     glBindVertexArray(chunk.ID);
 
     glDrawElements(GL_TRIANGLES, 36 * kChunkSize * kChunkSize * kChunkSize, GL_UNSIGNED_INT, 0);
+}
+
+Terrain MakeTerrain()
+{
+    Terrain terrain;
+    for (int i = 0; i < kTerrainSize*kTerrainSize; i++)
+    {
+        bool*** chunk = MakeChunk();
+        ApplyNoise(chunk);
+        ChunkMesh chunk_mesh = MakeChunkMesh(chunk);
+        DeleteChunk(chunk);
+
+        terrain.chunks.push_back(chunk_mesh);
+    }
+
+    return terrain;
+}
+
+void DeleteTerrain(Terrain terrain)
+{
+    for (int i = 0; i < terrain.chunks.size(); i++)
+        DeleteChunkMesh(terrain.chunks[i]);
+}
+
+void ApplyNoise(bool*** chunk)
+{
+    for (int x = 0; x < kChunkSize; x++)
+    {
+        for (int z = 0; z < kChunkSize; z++)
+        {
+            /*
+                Generate simplex noise, clamp to [0,1] and multiply by chunk size.
+            */
+            float noise = glm::simplex(glm::vec2(x / 16.f, z / 16.f));
+            float height = ((noise + 1) / 2) * kChunkSize;
+            for (int y = 0; y < height; y++)
+                chunk[x][y][z] = true;
+        }
+    }
 }

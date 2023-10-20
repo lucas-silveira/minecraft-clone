@@ -4,19 +4,26 @@
 #include <vector>
 
 extern const float kBlockSize;
-extern const unsigned int kChunkSize;
+extern const unsigned kChunkSize;
+extern const unsigned kTerrainSize;
 
-typedef struct {
+typedef struct
+{
     std::vector<float> vertices;
     std::vector<unsigned> indices;
 } BlockMesh;
 
-typedef struct {
+typedef struct
+{
     unsigned ID;
     unsigned buffers[2];
     std::vector<float> vertices;
     std::vector<unsigned> indices;
 } ChunkMesh;
+
+typedef struct {
+    std::vector<ChunkMesh> chunks;
+} Terrain;
 
 bool*** MakeChunk(void);
 void DeleteChunk(bool*** chunk);
@@ -29,5 +36,8 @@ BlockMesh MakeBlockMesh(
 ChunkMesh MakeChunkMesh(bool*** chunk);
 void RenderChunk(ChunkMesh chunk, unsigned texture);
 void DeleteChunkMesh(ChunkMesh chunk);
+Terrain MakeTerrain();
+void DeleteTerrain(Terrain terrain);
+void ApplyNoise(bool*** chunk);
 
 #endif
