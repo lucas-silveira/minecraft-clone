@@ -3,29 +3,29 @@
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 
-const float BLOCK_SIZE = 0.5f;
-const unsigned int CHUNK_SIZE = 16;
+const float kBlockSize = 0.5f;
+const unsigned int kChunkSize = 16;
 
-bool*** makeChunk(void)
+bool*** MakeChunk(void)
 {
-    bool*** chunk = new bool**[CHUNK_SIZE];
-    for (int x = 0; x < CHUNK_SIZE; x++)
+    bool*** chunk = new bool**[kChunkSize];
+    for (int x = 0; x < kChunkSize; x++)
     {
-        chunk[x] = new bool*[CHUNK_SIZE];
-        for (int y = 0; y < CHUNK_SIZE; y++)
+        chunk[x] = new bool*[kChunkSize];
+        for (int y = 0; y < kChunkSize; y++)
         {
-            chunk[x][y] = new bool[CHUNK_SIZE];
-            for (int z = 0; z < CHUNK_SIZE; z++)
+            chunk[x][y] = new bool[kChunkSize];
+            for (int z = 0; z < kChunkSize; z++)
                 chunk[x][y][z] = false;
         }
     }
     return chunk;
 }
 
-void deleteChunk(bool*** chunk)
+void DeleteChunk(bool*** chunk)
 {
-    for (int i = 0; i < CHUNK_SIZE; ++i) {
-        for (int j = 0; j < CHUNK_SIZE; ++j) {
+    for (int i = 0; i < kChunkSize; ++i) {
+        for (int j = 0; j < kChunkSize; ++j) {
             delete[] chunk[i][j];
         }
         delete[] chunk[i];
@@ -33,39 +33,39 @@ void deleteChunk(bool*** chunk)
     delete[] chunk;
 }
 
-blockMesh makeBlockMesh(float x, float y, float z)
+BlockMesh MakeBlockMesh(float x, float y, float z)
 {
-    blockMesh b = {
+    BlockMesh b = {
         {
-            x - BLOCK_SIZE, y - BLOCK_SIZE, z - BLOCK_SIZE,  0.0f, 0.0f,
-            x + BLOCK_SIZE, y - BLOCK_SIZE, z - BLOCK_SIZE,  1.0f, 0.0f,
-            x + BLOCK_SIZE, y + BLOCK_SIZE, z - BLOCK_SIZE,  1.0f, 1.0f,
-            x - BLOCK_SIZE, y + BLOCK_SIZE, z - BLOCK_SIZE,  0.0f, 1.0f,
+            x - kBlockSize, y - kBlockSize, z - kBlockSize,  0.0f, 0.0f,
+            x + kBlockSize, y - kBlockSize, z - kBlockSize,  1.0f, 0.0f,
+            x + kBlockSize, y + kBlockSize, z - kBlockSize,  1.0f, 1.0f,
+            x - kBlockSize, y + kBlockSize, z - kBlockSize,  0.0f, 1.0f,
 
-            x - BLOCK_SIZE, y - BLOCK_SIZE, z + BLOCK_SIZE,  0.0f, 0.0f,
-            x + BLOCK_SIZE, y - BLOCK_SIZE, z + BLOCK_SIZE,  1.0f, 0.0f,
-            x + BLOCK_SIZE, y + BLOCK_SIZE, z + BLOCK_SIZE,  1.0f, 1.0f,
-            x - BLOCK_SIZE, y + BLOCK_SIZE, z + BLOCK_SIZE,  0.0f, 1.0f,
+            x - kBlockSize, y - kBlockSize, z + kBlockSize,  0.0f, 0.0f,
+            x + kBlockSize, y - kBlockSize, z + kBlockSize,  1.0f, 0.0f,
+            x + kBlockSize, y + kBlockSize, z + kBlockSize,  1.0f, 1.0f,
+            x - kBlockSize, y + kBlockSize, z + kBlockSize,  0.0f, 1.0f,
 
-            x - BLOCK_SIZE, y + BLOCK_SIZE, z - BLOCK_SIZE,  0.0f, 0.0f,
-            x - BLOCK_SIZE, y - BLOCK_SIZE, z - BLOCK_SIZE,  1.0f, 0.0f,
-            x - BLOCK_SIZE, y - BLOCK_SIZE, z + BLOCK_SIZE,  1.0f, 1.0f,
-            x - BLOCK_SIZE, y + BLOCK_SIZE, z + BLOCK_SIZE,  0.0f, 1.0f,
+            x - kBlockSize, y + kBlockSize, z - kBlockSize,  0.0f, 0.0f,
+            x - kBlockSize, y - kBlockSize, z - kBlockSize,  1.0f, 0.0f,
+            x - kBlockSize, y - kBlockSize, z + kBlockSize,  1.0f, 1.0f,
+            x - kBlockSize, y + kBlockSize, z + kBlockSize,  0.0f, 1.0f,
 
-            x + BLOCK_SIZE, y - BLOCK_SIZE, z - BLOCK_SIZE,  0.0f, 0.0f,
-            x + BLOCK_SIZE, y + BLOCK_SIZE, z - BLOCK_SIZE,  1.0f, 0.0f,
-            x + BLOCK_SIZE, y + BLOCK_SIZE, z + BLOCK_SIZE,  1.0f, 1.0f,
-            x + BLOCK_SIZE, y - BLOCK_SIZE, z + BLOCK_SIZE,  0.0f, 1.0f,
+            x + kBlockSize, y - kBlockSize, z - kBlockSize,  0.0f, 0.0f,
+            x + kBlockSize, y + kBlockSize, z - kBlockSize,  1.0f, 0.0f,
+            x + kBlockSize, y + kBlockSize, z + kBlockSize,  1.0f, 1.0f,
+            x + kBlockSize, y - kBlockSize, z + kBlockSize,  0.0f, 1.0f,
 
-            x - BLOCK_SIZE, y - BLOCK_SIZE, z - BLOCK_SIZE,  0.0f, 0.0f,
-            x + BLOCK_SIZE, y - BLOCK_SIZE, z - BLOCK_SIZE,  1.0f, 0.0f,
-            x + BLOCK_SIZE, y - BLOCK_SIZE, z + BLOCK_SIZE,  1.0f, 1.0f,
-            x - BLOCK_SIZE, y - BLOCK_SIZE, z + BLOCK_SIZE,  0.0f, 1.0f,
+            x - kBlockSize, y - kBlockSize, z - kBlockSize,  0.0f, 0.0f,
+            x + kBlockSize, y - kBlockSize, z - kBlockSize,  1.0f, 0.0f,
+            x + kBlockSize, y - kBlockSize, z + kBlockSize,  1.0f, 1.0f,
+            x - kBlockSize, y - kBlockSize, z + kBlockSize,  0.0f, 1.0f,
 
-            x + BLOCK_SIZE, y + BLOCK_SIZE, z - BLOCK_SIZE,  0.0f, 0.0f,
-            x - BLOCK_SIZE, y + BLOCK_SIZE, z - BLOCK_SIZE,  1.0f, 0.0f,
-            x - BLOCK_SIZE, y + BLOCK_SIZE, z + BLOCK_SIZE,  1.0f, 1.0f,
-            x + BLOCK_SIZE, y + BLOCK_SIZE, z + BLOCK_SIZE,  0.0f, 1.0f,
+            x + kBlockSize, y + kBlockSize, z - kBlockSize,  0.0f, 0.0f,
+            x - kBlockSize, y + kBlockSize, z - kBlockSize,  1.0f, 0.0f,
+            x - kBlockSize, y + kBlockSize, z + kBlockSize,  1.0f, 1.0f,
+            x + kBlockSize, y + kBlockSize, z + kBlockSize,  0.0f, 1.0f,
         },
         {
             // Back
@@ -91,36 +91,36 @@ blockMesh makeBlockMesh(float x, float y, float z)
     return b;
 }
 
-chunkMesh makeChunkMesh(bool*** chunk)
+ChunkMesh MakeChunkMesh(bool*** chunk)
 {
-    chunkMesh chunkMesh;
-    for (int x = 0; x < CHUNK_SIZE; x++)
-        for (int y = 0; y < CHUNK_SIZE; y++)
-            for (int z = 0; z < CHUNK_SIZE; z++)
+    ChunkMesh chunk_mesh;
+    for (int x = 0; x < kChunkSize; x++)
+        for (int y = 0; y < kChunkSize; y++)
+            for (int z = 0; z < kChunkSize; z++)
             {
                 if (chunk[x][y][z] == false) continue;
-                blockMesh blockMesh = makeBlockMesh(x, y, z);
+                BlockMesh blockMesh = MakeBlockMesh(x, y, z);
 
                 for (int i = 0; i < sizeof(blockMesh.indices) / sizeof(unsigned); i++)
                 {
-                    chunkMesh.indices.push_back(blockMesh.indices[i] + chunkMesh.vertices.size() / 5);
+                    chunk_mesh.indices.push_back(blockMesh.indices[i] + chunk_mesh.vertices.size() / 5);
                 }
                 
                 for (int i = 0; i < sizeof(blockMesh.vertices)/sizeof(float); i++)
                 {
-                    chunkMesh.vertices.push_back(blockMesh.vertices[i]);
+                    chunk_mesh.vertices.push_back(blockMesh.vertices[i]);
                 }
             }
 
-    glGenBuffers(2, chunkMesh.buffers);
-    glGenVertexArrays(1, &chunkMesh.ID);
+    glGenBuffers(2, chunk_mesh.buffers);
+    glGenVertexArrays(1, &chunk_mesh.ID);
 
-    glBindVertexArray(chunkMesh.ID);
+    glBindVertexArray(chunk_mesh.ID);
 
-    glBindBuffer(GL_ARRAY_BUFFER, chunkMesh.buffers[0]);
-    glBufferData(GL_ARRAY_BUFFER, chunkMesh.vertices.size() * sizeof(float), &chunkMesh.vertices[0], GL_STATIC_DRAW);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, chunkMesh.buffers[1]);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, chunkMesh.indices.size() * sizeof(unsigned), &chunkMesh.indices[0], GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, chunk_mesh.buffers[0]);
+    glBufferData(GL_ARRAY_BUFFER, chunk_mesh.vertices.size() * sizeof(float), &chunk_mesh.vertices[0], GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, chunk_mesh.buffers[1]);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, chunk_mesh.indices.size() * sizeof(unsigned), &chunk_mesh.indices[0], GL_STATIC_DRAW);
     /* Position */
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -131,19 +131,19 @@ chunkMesh makeChunkMesh(bool*** chunk)
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    return chunkMesh;
+    return chunk_mesh;
 }
 
-void deleteChunkMesh(chunkMesh chunk)
+void DeleteChunkMesh(ChunkMesh chunk)
 {
     glDeleteVertexArrays(1, &chunk.ID);
     glDeleteBuffers(2, chunk.buffers);
 }
 
-void renderChunk(chunkMesh chunk, unsigned texture)
+void RenderChunk(ChunkMesh chunk, unsigned texture)
 {
     glBindTexture(GL_TEXTURE_2D, texture);
     glBindVertexArray(chunk.ID);
 
-    glDrawElements(GL_TRIANGLES, 36 * CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, 36 * kChunkSize * kChunkSize * kChunkSize, GL_UNSIGNED_INT, 0);
 }

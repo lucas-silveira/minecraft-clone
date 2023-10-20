@@ -12,44 +12,44 @@
 #include "chunk.hpp"
 
 // Settings
-const unsigned int SCREEN_WIDTH = 1280;
-const unsigned int SCREEN_HEIGHT = 720;
-const unsigned int FPS = 60;
+const unsigned int kScreenWidth = 1280;
+const unsigned int kScreenHeight = 720;
+const unsigned int kFps = 60;
 
 // Time
-float deltaTime = 0.f;
-float lastFrame = 0.f;
+float delta_time = 0.f;
+float last_frame = 0.f;
 
 // Camera
-glm::vec3 cameraPos = glm::vec3(0.f, 10.f, 45.f);
-glm::vec3 cameraFront = glm::vec3(0.f, 0.f, -1.f);
-glm::vec3 cameraUp = glm::vec3(0.f, 1.f, 0.f);
-bool firstMouse = true;
+glm::vec3 camera_pos = glm::vec3(0.f, 10.f, 45.f);
+glm::vec3 camera_front = glm::vec3(0.f, 0.f, -1.f);
+glm::vec3 camera_up = glm::vec3(0.f, 1.f, 0.f);
+bool first_mouse = true;
 float fov = 45.f;
 float yaw = -90.f;
 float pitch = 0.f;
-float lastMouseX = SCREEN_WIDTH / 2.f;
-float lastMouseY = SCREEN_HEIGHT / 2.f;
+float last_mouse_x = kScreenWidth / 2.f;
+float last_mouse_y = kScreenHeight / 2.f;
 
-void framebufferSizeCallback(GLFWwindow* window, int width, int height)
+void FramebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
 }
 
-void mouseCallback(GLFWwindow* window, double xpos, double ypos)
+void MouseCallback(GLFWwindow* window, double xpos, double ypos)
 {
     // Avoid camera jump to the mouse position from the center
-    if (firstMouse)
+    if (first_mouse)
     {
-        lastMouseX = xpos;
-        lastMouseY = ypos;
-        firstMouse = false;
+        last_mouse_x = xpos;
+        last_mouse_y = ypos;
+        first_mouse = false;
     }
 
-    float xoffset = xpos - lastMouseX;
-    float yoffset = lastMouseY - ypos; // reversed: y ranges from bottom to top
-    lastMouseX = xpos;
-    lastMouseY = ypos;
+    float xoffset = xpos - last_mouse_x;
+    float yoffset = last_mouse_y - ypos; // reversed: y ranges from bottom to top
+    last_mouse_x = xpos;
+    last_mouse_y = ypos;
 
     float sensitivity = 0.05f; // avoid strong movements
     xoffset *= sensitivity;
@@ -62,62 +62,61 @@ void mouseCallback(GLFWwindow* window, double xpos, double ypos)
     direction.x = std::cos(glm::radians(yaw)) * std::cos(glm::radians(pitch));
     direction.y = std::sin(glm::radians(pitch));
     direction.z = std::sin(glm::radians(yaw)) * std::cos(glm::radians(pitch));
-    cameraFront = glm::normalize(direction);
+    camera_front = glm::normalize(direction);
 }
 
-void processInput(GLFWwindow* window)
+void ProcessInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    float cameraSpeed = 5.5f * deltaTime;
+    float camera_speed = 5.5f * delta_time;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        cameraPos += cameraSpeed * cameraFront;
+        camera_pos += camera_speed * camera_front;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        cameraPos -= cameraSpeed * cameraFront;
+        camera_pos -= camera_speed * camera_front;
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+        camera_pos -= glm::normalize(glm::cross(camera_front, camera_up)) * camera_speed;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+        camera_pos += glm::normalize(glm::cross(camera_front, camera_up)) * camera_speed;
     
     // Fix movement at the ground level (xz plane)
-    //cameraPos.y = 0.0f;
+    //camera_pos.y = 0.0f;
 }
 
-glm::mat4 makeModelMatrix(glm::vec3& pos)
+glm::mat4 MakeModelMatrix(glm::vec3& pos)
 {
     glm::mat4 model = glm::mat4(1.f);
     model = glm::translate(model, pos);
     return model;
 }
-glm::mat4 makeViewMatrix()
+glm::mat4 MakeViewMatrix()
 {
-    glm::mat4 view = glm::mat4(1.f);
-    view = glm::translate(view, glm::vec3(0.f, 0.f, -3.f));
+    glm::mat4 view = glm::lookAt(camera_pos, camera_pos + camera_front, camera_up);
     return view;
 }
-glm::mat4 makeProjectionMatrix()
+glm::mat4 MakeProjectionMatrix()
 {
     glm::mat4 projection;
     float fov = glm::radians(45.f);
-    float aspectRatio = (float)SCREEN_WIDTH / SCREEN_HEIGHT;
-    float nearPlane = 0.1f;
-    float farPlane = 100.f;
-    projection = glm::perspective(fov, aspectRatio, nearPlane, farPlane);
+    float aspect_ratio = (float)kScreenWidth / kScreenHeight;
+    float near_plane = 0.1f;
+    float far_plane = 100.f;
+    projection = glm::perspective(fov, aspect_ratio, near_plane, far_plane);
     return projection;
 }
 
-void applyNoise(bool*** chunk)
+void ApplyNoise(bool*** chunk)
 {
-    for (int x = 0; x < CHUNK_SIZE; x++)
+    for (int x = 0; x < kChunkSize; x++)
     {
-        for (int z = 0; z < CHUNK_SIZE; z++)
+        for (int z = 0; z < kChunkSize; z++)
         {
             /*
                 Generate simplex noise, clamp to [0,1] and multiply by chunk size.
             */
             float noise = glm::simplex(glm::vec2(x / 16.f, z / 16.f));
-            float height = ((noise + 1) / 2) * CHUNK_SIZE;
+            float height = ((noise + 1) / 2) * kChunkSize;
             std::cout << height << std::endl;
             for (int y = 0; y < height; y++)
             {
@@ -142,7 +141,7 @@ int main(void)
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-    GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Hello World", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(kScreenWidth, kScreenHeight, "Hello World", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -150,19 +149,19 @@ int main(void)
     }
 
     glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
-    glfwSetCursorPosCallback(window, mouseCallback);
+    glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
+    glfwSetCursorPosCallback(window, MouseCallback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     gladLoadGL(glfwGetProcAddress);
 
     glEnable(GL_DEPTH_TEST);
-    Shader shaderProgram("shaders/shader.vert", "shaders/shader.frag");
+    Shader shader_program("shaders/shader.vert", "shaders/shader.frag");
 
-    bool*** chunk = makeChunk();
-    applyNoise(chunk);
-    chunkMesh chunkMesh = makeChunkMesh(chunk);
-    deleteChunk(chunk);
+    bool*** chunk = MakeChunk();
+    ApplyNoise(chunk);
+    ChunkMesh chunk_mesh = MakeChunkMesh(chunk);
+    DeleteChunk(chunk);
 
     // Load texture
     unsigned int texture;
@@ -173,9 +172,9 @@ int main(void)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-    int width, height, nrChannels;
+    int width, height, nr_channels;
     stbi_set_flip_vertically_on_load(true);
-    unsigned char* data = stbi_load("assets/dirt.jpg", &width, &height, &nrChannels, 0);
+    unsigned char* data = stbi_load("assets/dirt.jpg", &width, &height, &nr_channels, 0);
 
     if (data)
     {
@@ -192,34 +191,35 @@ int main(void)
 
     while (!glfwWindowShouldClose(window))
     {
-        float currentFrame = glfwGetTime();
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
+        float current_frame = glfwGetTime();
+        delta_time = current_frame - last_frame;
+        last_frame = current_frame;
 
         // Show frame rate
-        //std::cout << 1.f / deltaTime << std::endl;
+        //std::cout << 1.f / delta_time << std::endl;
 
-        processInput(window);
+        ProcessInput(window);
 
         glClearColor(0.529f, 0.808f, 0.922f, 1.f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        shaderProgram.use();
+        shader_program.use();
         /* Transformation matrices */
-        glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-        shaderProgram.setMat4("view", view);
-        glm::mat4 projection = makeProjectionMatrix();
-        shaderProgram.setMat4("projection", projection);
+        glm::mat4 view = MakeViewMatrix();
+        shader_program.setMat4("view", view);
+        glm::mat4 projection = MakeProjectionMatrix();
+        shader_program.setMat4("projection", projection);
 
-        for (int x = 0; x < 5*CHUNK_SIZE; x += CHUNK_SIZE)
+        const unsigned kTerrainSize = 1;
+        for (int x = 0; x < kTerrainSize*kChunkSize; x += kChunkSize)
         {
-            for (int z = 0; z < 5*CHUNK_SIZE; z += CHUNK_SIZE)
+            for (int z = 0; z < kTerrainSize*kChunkSize; z += kChunkSize)
             {
                 glm::vec3 pos(x, 0, z);
-                glm::mat4 model = makeModelMatrix(pos);
-                shaderProgram.setMat4("model", model);
+                glm::mat4 model = MakeModelMatrix(pos);
+                shader_program.setMat4("model", model);
 
-                renderChunk(chunkMesh, texture);
+                RenderChunk(chunk_mesh, texture);
             }
         }
 
@@ -229,12 +229,12 @@ int main(void)
         glfwPollEvents();
 
         // Limit frame rate
-        //float msPerFrame = 1.f / FPS;
-        //if (deltaTime < msPerFrame) Sleep((msPerFrame - deltaTime)*1000.f);
+        //float msPerFrame = 1.f / kFps;
+        //if (delta_time < msPerFrame) Sleep((msPerFrame - delta_time)*1000.f);
     }
 
-    deleteChunkMesh(chunkMesh);
-    shaderProgram.remove();
+    DeleteChunkMesh(chunk_mesh);
+    shader_program.remove();
 
     glfwTerminate();
     return 0;
