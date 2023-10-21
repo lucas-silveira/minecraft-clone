@@ -45,48 +45,94 @@ BlockMesh MakeBlockMesh(
     bool back_neighbor, bool front_neighbor
 )
 {
-    std::vector<float> vertices = {
-        // Back
-        x - kBlockSize, y - kBlockSize, z - kBlockSize,  0.0f, 0.0f,   0.0f,  0.0f, -1.0f,
-        x + kBlockSize, y - kBlockSize, z - kBlockSize,  1.0f, 0.0f,   0.0f,  0.0f, -1.0f,
-        x + kBlockSize, y + kBlockSize, z - kBlockSize,  1.0f, 1.0f,   0.0f,  0.0f, -1.0f,
-        x - kBlockSize, y + kBlockSize, z - kBlockSize,  0.0f, 1.0f,   0.0f,  0.0f, -1.0f,
-        // Front
-        x - kBlockSize, y - kBlockSize, z + kBlockSize,  0.0f, 0.0f,   0.0f,  0.0f,  1.0f,
-        x + kBlockSize, y - kBlockSize, z + kBlockSize,  1.0f, 0.0f,   0.0f,  0.0f,  1.0f,
-        x + kBlockSize, y + kBlockSize, z + kBlockSize,  1.0f, 1.0f,   0.0f,  0.0f,  1.0f,
-        x - kBlockSize, y + kBlockSize, z + kBlockSize,  0.0f, 1.0f,   0.0f,  0.0f,  1.0f,
-        // Left
-        x - kBlockSize, y + kBlockSize, z - kBlockSize,  0.0f, 0.0f,  -1.0f,  0.0f,  0.0f,
-        x - kBlockSize, y - kBlockSize, z - kBlockSize,  1.0f, 0.0f,  -1.0f,  0.0f,  0.0f,
-        x - kBlockSize, y - kBlockSize, z + kBlockSize,  1.0f, 1.0f,  -1.0f,  0.0f,  0.0f,
-        x - kBlockSize, y + kBlockSize, z + kBlockSize,  0.0f, 1.0f,  -1.0f,  0.0f,  0.0f,
-        // Right
-        x + kBlockSize, y - kBlockSize, z - kBlockSize,  0.0f, 0.0f,   1.0f,  0.0f,  0.0f,
-        x + kBlockSize, y + kBlockSize, z - kBlockSize,  1.0f, 0.0f,   1.0f,  0.0f,  0.0f,
-        x + kBlockSize, y + kBlockSize, z + kBlockSize,  1.0f, 1.0f,   1.0f,  0.0f,  0.0f,
-        x + kBlockSize, y - kBlockSize, z + kBlockSize,  0.0f, 1.0f,   1.0f,  0.0f,  0.0f,
-        // Bottom
-        x - kBlockSize, y - kBlockSize, z - kBlockSize,  0.0f, 0.0f,   1.0f, -1.0f,  0.0f,
-        x + kBlockSize, y - kBlockSize, z - kBlockSize,  1.0f, 0.0f,   1.0f, -1.0f,  0.0f,
-        x + kBlockSize, y - kBlockSize, z + kBlockSize,  1.0f, 1.0f,   1.0f, -1.0f,  0.0f,
-        x - kBlockSize, y - kBlockSize, z + kBlockSize,  0.0f, 1.0f,   1.0f, -1.0f,  0.0f,
-        // Top
-        x + kBlockSize, y + kBlockSize, z - kBlockSize,  0.0f, 0.0f,   0.0f,  1.0f,  0.0f,
-        x - kBlockSize, y + kBlockSize, z - kBlockSize,  1.0f, 0.0f,   0.0f,  1.0f,  0.0f,
-        x - kBlockSize, y + kBlockSize, z + kBlockSize,  1.0f, 1.0f,   0.0f,  1.0f,  0.0f,
-        x + kBlockSize, y + kBlockSize, z + kBlockSize,  0.0f, 1.0f,   0.0f,  1.0f,  0.0f,
-    };
+    std::vector<float> vertices;
     std::vector<unsigned> indices;
 
-    if (!back_neighbor) indices.insert(indices.end(), { 0, 3, 2, 2, 1, 0 });
-    if (!front_neighbor) indices.insert(indices.end(), { 4, 5, 6, 6, 7, 4 });
+    if (!back_neighbor)
+    {
+        vertices.insert(vertices.end(), {
+            x - kBlockSize, y - kBlockSize, z - kBlockSize,  0.0f, 0.0f,  0.0f,  0.0f, -1.0f,
+            x + kBlockSize, y - kBlockSize, z - kBlockSize,  1.0f, 0.0f,  0.0f,  0.0f, -1.0f,
+            x + kBlockSize, y + kBlockSize, z - kBlockSize,  1.0f, 1.0f,  0.0f,  0.0f, -1.0f,
+            x - kBlockSize, y + kBlockSize, z - kBlockSize,  0.0f, 1.0f,  0.0f,  0.0f, -1.0f,
+        });
+        indices.insert(indices.end(), {
+            0, 3, 2,
+            2, 1, 0
+        });
+    }
+    if (!front_neighbor)
+    {
+        unsigned offset = vertices.size() / 8;
+        vertices.insert(vertices.end(), {
+            x - kBlockSize, y - kBlockSize, z + kBlockSize,  0.0f, 0.0f,  0.0f,  0.0f,  1.0f,
+            x + kBlockSize, y - kBlockSize, z + kBlockSize,  1.0f, 0.0f,  0.0f,  0.0f,  1.0f,
+            x + kBlockSize, y + kBlockSize, z + kBlockSize,  1.0f, 1.0f,  0.0f,  0.0f,  1.0f,
+            x - kBlockSize, y + kBlockSize, z + kBlockSize,  0.0f, 1.0f,  0.0f,  0.0f,  1.0f,
+        });
+        indices.insert(indices.end(), {
+            0+offset, 1+offset, 2+offset,
+            2+offset, 3+offset, 0+offset
+         });
+    }
 
-    if (!left_neighbor) indices.insert(indices.end(), { 11, 8, 9, 9, 10, 11 });
-    if (!right_neighbor) indices.insert(indices.end(), { 12, 13, 14, 14, 15, 12 });
+    if (!left_neighbor)
+    {
+        unsigned offset = vertices.size() / 8;
+        vertices.insert(vertices.end(), {
+            x - kBlockSize, y + kBlockSize, z - kBlockSize,  0.0f, 0.0f,  -1.0f,  0.0f,  0.0f,
+            x - kBlockSize, y - kBlockSize, z - kBlockSize,  1.0f, 0.0f,  -1.0f,  0.0f,  0.0f,
+            x - kBlockSize, y - kBlockSize, z + kBlockSize,  1.0f, 1.0f,  -1.0f,  0.0f,  0.0f,
+            x - kBlockSize, y + kBlockSize, z + kBlockSize,  0.0f, 1.0f,  -1.0f,  0.0f,  0.0f,
+        });
+        indices.insert(indices.end(), {
+            3+offset, 0+offset, 1+offset,
+            1+offset, 2+offset, 3+offset
+        });
+    }
+    if (!right_neighbor)
+    {
+        unsigned offset = vertices.size() / 8;
+        vertices.insert(vertices.end(), {
+            x + kBlockSize, y - kBlockSize, z - kBlockSize,  0.0f, 0.0f,  1.0f,  0.0f,  0.0f,
+            x + kBlockSize, y + kBlockSize, z - kBlockSize,  1.0f, 0.0f,  1.0f,  0.0f,  0.0f,
+            x + kBlockSize, y + kBlockSize, z + kBlockSize,  1.0f, 1.0f,  1.0f,  0.0f,  0.0f,
+            x + kBlockSize, y - kBlockSize, z + kBlockSize,  0.0f, 1.0f,  1.0f,  0.0f,  0.0f,
+        });
+        indices.insert(indices.end(), {
+            0+offset, 1+offset, 2+offset,
+            2+offset, 3+offset, 0+offset
+        });
+    }
 
-    if (!bottom_neighbor) indices.insert(indices.end(), { 16, 17, 18, 18, 19, 16 });
-    if (!top_neighbor) indices.insert(indices.end(), { 20, 21, 22, 22, 23, 20 });
+    if (!bottom_neighbor)
+    {
+        unsigned offset = vertices.size() / 8;
+        vertices.insert(vertices.end(), {
+            x - kBlockSize, y - kBlockSize, z - kBlockSize,  0.0f, 0.0f,  1.0f, -1.0f,  0.0f,
+            x + kBlockSize, y - kBlockSize, z - kBlockSize,  1.0f, 0.0f,  1.0f, -1.0f,  0.0f,
+            x + kBlockSize, y - kBlockSize, z + kBlockSize,  1.0f, 1.0f,  1.0f, -1.0f,  0.0f,
+            x - kBlockSize, y - kBlockSize, z + kBlockSize,  0.0f, 1.0f,  1.0f, -1.0f,  0.0f,
+        });
+        indices.insert(indices.end(), {
+            0+offset, 1+offset, 2+offset,
+            2+offset, 3+offset, 0+offset
+        });
+    }
+    if (!top_neighbor)
+    {
+        unsigned offset = vertices.size() / 8;
+        vertices.insert(vertices.end(), {
+            x + kBlockSize, y + kBlockSize, z - kBlockSize,  0.0f, 0.0f,  0.0f,  1.0f,  0.0f,
+            x - kBlockSize, y + kBlockSize, z - kBlockSize,  1.0f, 0.0f,  0.0f,  1.0f,  0.0f,
+            x - kBlockSize, y + kBlockSize, z + kBlockSize,  1.0f, 1.0f,  0.0f,  1.0f,  0.0f,
+            x + kBlockSize, y + kBlockSize, z + kBlockSize,  0.0f, 1.0f,  0.0f,  1.0f,  0.0f,
+        });
+        indices.insert(indices.end(), {
+            0+offset, 1+offset, 2+offset,
+            2+offset, 3+offset, 0+offset
+        });
+    }
     
     BlockMesh b;
     b.vertices = vertices;
@@ -126,7 +172,8 @@ ChunkMesh MakeChunkMesh(bool*** chunk)
 
                 for (int i = 0; i < blockMesh.indices.size(); i++)
                 {
-                    chunk_mesh.indices.push_back(blockMesh.indices[i] + chunk_mesh.vertices.size() / 8);
+                    unsigned offset = chunk_mesh.vertices.size() / 8;
+                    chunk_mesh.indices.push_back(blockMesh.indices[i] + offset);
                 }
                 
                 for (int i = 0; i < blockMesh.vertices.size(); i++)
@@ -202,11 +249,13 @@ void ApplyNoise(bool*** chunk)
     {
         for (int z = 0; z < kChunkSize; z++)
         {
+            int cube_x = x + kChunkSize;
+            int cube_z = z + kChunkSize;
             /*
                 Generate simplex noise, clamp to [0,1] and multiply by chunk size.
             */
             float noise = glm::simplex(glm::vec2(x / 16.f, z / 16.f));
-            float height = ((noise + 1) / 2) * kChunkSize;
+            float height = ((noise + 1) / 2) * 16.f;
             for (int y = 0; y < height; y++)
                 chunk[x][y][z] = true;
         }
