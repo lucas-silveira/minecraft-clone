@@ -45,38 +45,37 @@ BlockMesh MakeBlockMesh(
     bool back_neighbor, bool front_neighbor
 )
 {
-    BlockMesh b;
     std::vector<float> vertices = {
         // Back
-        x - kBlockSize, y - kBlockSize, z - kBlockSize,  0.0f, 0.0f,
-        x + kBlockSize, y - kBlockSize, z - kBlockSize,  1.0f, 0.0f,
-        x + kBlockSize, y + kBlockSize, z - kBlockSize,  1.0f, 1.0f,
-        x - kBlockSize, y + kBlockSize, z - kBlockSize,  0.0f, 1.0f,
+        x - kBlockSize, y - kBlockSize, z - kBlockSize,  0.0f, 0.0f,   0.0f,  0.0f, -1.0f,
+        x + kBlockSize, y - kBlockSize, z - kBlockSize,  1.0f, 0.0f,   0.0f,  0.0f, -1.0f,
+        x + kBlockSize, y + kBlockSize, z - kBlockSize,  1.0f, 1.0f,   0.0f,  0.0f, -1.0f,
+        x - kBlockSize, y + kBlockSize, z - kBlockSize,  0.0f, 1.0f,   0.0f,  0.0f, -1.0f,
         // Front
-        x - kBlockSize, y - kBlockSize, z + kBlockSize,  0.0f, 0.0f,
-        x + kBlockSize, y - kBlockSize, z + kBlockSize,  1.0f, 0.0f,
-        x + kBlockSize, y + kBlockSize, z + kBlockSize,  1.0f, 1.0f,
-        x - kBlockSize, y + kBlockSize, z + kBlockSize,  0.0f, 1.0f,
+        x - kBlockSize, y - kBlockSize, z + kBlockSize,  0.0f, 0.0f,   0.0f,  0.0f,  1.0f,
+        x + kBlockSize, y - kBlockSize, z + kBlockSize,  1.0f, 0.0f,   0.0f,  0.0f,  1.0f,
+        x + kBlockSize, y + kBlockSize, z + kBlockSize,  1.0f, 1.0f,   0.0f,  0.0f,  1.0f,
+        x - kBlockSize, y + kBlockSize, z + kBlockSize,  0.0f, 1.0f,   0.0f,  0.0f,  1.0f,
         // Left
-        x - kBlockSize, y + kBlockSize, z - kBlockSize,  0.0f, 0.0f,
-        x - kBlockSize, y - kBlockSize, z - kBlockSize,  1.0f, 0.0f,
-        x - kBlockSize, y - kBlockSize, z + kBlockSize,  1.0f, 1.0f,
-        x - kBlockSize, y + kBlockSize, z + kBlockSize,  0.0f, 1.0f,
+        x - kBlockSize, y + kBlockSize, z - kBlockSize,  0.0f, 0.0f,  -1.0f,  0.0f,  0.0f,
+        x - kBlockSize, y - kBlockSize, z - kBlockSize,  1.0f, 0.0f,  -1.0f,  0.0f,  0.0f,
+        x - kBlockSize, y - kBlockSize, z + kBlockSize,  1.0f, 1.0f,  -1.0f,  0.0f,  0.0f,
+        x - kBlockSize, y + kBlockSize, z + kBlockSize,  0.0f, 1.0f,  -1.0f,  0.0f,  0.0f,
         // Right
-        x + kBlockSize, y - kBlockSize, z - kBlockSize,  0.0f, 0.0f,
-        x + kBlockSize, y + kBlockSize, z - kBlockSize,  1.0f, 0.0f,
-        x + kBlockSize, y + kBlockSize, z + kBlockSize,  1.0f, 1.0f,
-        x + kBlockSize, y - kBlockSize, z + kBlockSize,  0.0f, 1.0f,
+        x + kBlockSize, y - kBlockSize, z - kBlockSize,  0.0f, 0.0f,   1.0f,  0.0f,  0.0f,
+        x + kBlockSize, y + kBlockSize, z - kBlockSize,  1.0f, 0.0f,   1.0f,  0.0f,  0.0f,
+        x + kBlockSize, y + kBlockSize, z + kBlockSize,  1.0f, 1.0f,   1.0f,  0.0f,  0.0f,
+        x + kBlockSize, y - kBlockSize, z + kBlockSize,  0.0f, 1.0f,   1.0f,  0.0f,  0.0f,
         // Bottom
-        x - kBlockSize, y - kBlockSize, z - kBlockSize,  0.0f, 0.0f,
-        x + kBlockSize, y - kBlockSize, z - kBlockSize,  1.0f, 0.0f,
-        x + kBlockSize, y - kBlockSize, z + kBlockSize,  1.0f, 1.0f,
-        x - kBlockSize, y - kBlockSize, z + kBlockSize,  0.0f, 1.0f,
+        x - kBlockSize, y - kBlockSize, z - kBlockSize,  0.0f, 0.0f,   1.0f, -1.0f,  0.0f,
+        x + kBlockSize, y - kBlockSize, z - kBlockSize,  1.0f, 0.0f,   1.0f, -1.0f,  0.0f,
+        x + kBlockSize, y - kBlockSize, z + kBlockSize,  1.0f, 1.0f,   1.0f, -1.0f,  0.0f,
+        x - kBlockSize, y - kBlockSize, z + kBlockSize,  0.0f, 1.0f,   1.0f, -1.0f,  0.0f,
         // Top
-        x + kBlockSize, y + kBlockSize, z - kBlockSize,  0.0f, 0.0f,
-        x - kBlockSize, y + kBlockSize, z - kBlockSize,  1.0f, 0.0f,
-        x - kBlockSize, y + kBlockSize, z + kBlockSize,  1.0f, 1.0f,
-        x + kBlockSize, y + kBlockSize, z + kBlockSize,  0.0f, 1.0f,
+        x + kBlockSize, y + kBlockSize, z - kBlockSize,  0.0f, 0.0f,   0.0f,  1.0f,  0.0f,
+        x - kBlockSize, y + kBlockSize, z - kBlockSize,  1.0f, 0.0f,   0.0f,  1.0f,  0.0f,
+        x - kBlockSize, y + kBlockSize, z + kBlockSize,  1.0f, 1.0f,   0.0f,  1.0f,  0.0f,
+        x + kBlockSize, y + kBlockSize, z + kBlockSize,  0.0f, 1.0f,   0.0f,  1.0f,  0.0f,
     };
     std::vector<unsigned> indices;
 
@@ -89,6 +88,7 @@ BlockMesh MakeBlockMesh(
     if (!bottom_neighbor) indices.insert(indices.end(), { 16, 17, 18, 18, 19, 16 });
     if (!top_neighbor) indices.insert(indices.end(), { 20, 21, 22, 22, 23, 20 });
     
+    BlockMesh b;
     b.vertices = vertices;
     b.indices = indices;
 
@@ -126,7 +126,7 @@ ChunkMesh MakeChunkMesh(bool*** chunk)
 
                 for (int i = 0; i < blockMesh.indices.size(); i++)
                 {
-                    chunk_mesh.indices.push_back(blockMesh.indices[i] + chunk_mesh.vertices.size() / 5);
+                    chunk_mesh.indices.push_back(blockMesh.indices[i] + chunk_mesh.vertices.size() / 8);
                 }
                 
                 for (int i = 0; i < blockMesh.vertices.size(); i++)
@@ -145,11 +145,14 @@ ChunkMesh MakeChunkMesh(bool*** chunk)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, chunk_mesh.buffers[1]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, chunk_mesh.indices.size() * sizeof(unsigned), &chunk_mesh.indices[0], GL_STATIC_DRAW);
     /* Position */
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     // Texture
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+    // Normals
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
