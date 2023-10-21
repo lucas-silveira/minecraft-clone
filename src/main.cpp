@@ -26,7 +26,7 @@ float delta_time = 0.f;
 float last_frame = 0.f;
 
 // Camera
-glm::vec3 camera_pos = glm::vec3(0.f, 10.f, 45.f);
+glm::vec3 camera_pos = glm::vec3(0.f, 45.f, 45.f);
 glm::vec3 camera_front = glm::vec3(0.f, 0.f, -1.f);
 glm::vec3 camera_up = glm::vec3(0.f, 1.f, 0.f);
 bool first_mouse = true;
@@ -78,7 +78,7 @@ void ProcessInput()
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    float camera_speed = 5.5f * delta_time;
+    float camera_speed = 10.f * delta_time;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         camera_pos += camera_speed * camera_front;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -109,7 +109,7 @@ glm::mat4 MakeProjectionMatrix(void)
     float fov = glm::radians(45.f);
     float aspect_ratio = (float)kScreenWidth / kScreenHeight;
     float near_plane = 0.1f;
-    float far_plane = 100.f;
+    float far_plane = 200.f;
     projection = glm::perspective(fov, aspect_ratio, near_plane, far_plane);
     return projection;
 }

@@ -8,7 +8,9 @@
 #include <vector>
 
 const float kBlockSize = 0.5f;
-const unsigned kChunkSize = 16;
+const unsigned kChunkSize = 32;
+const unsigned kChunkArea = kChunkSize*kChunkSize;
+const unsigned kChunkVolume = kChunkSize*kChunkSize*kChunkSize;
 const unsigned kTerrainSize = 5;
 
 Chunk* MakeChunk(void)
@@ -188,27 +190,30 @@ ChunkMesh MakeChunkMesh(Chunk* chunk)
                 }
             }
 
-    glGenBuffers(2, chunk_mesh.buffers);
-    glGenVertexArrays(1, &chunk_mesh.ID);
+    if (chunk_mesh.vertices.size() > 0)
+    {
+        glGenBuffers(2, chunk_mesh.buffers);
+        glGenVertexArrays(1, &chunk_mesh.ID);
 
-    glBindVertexArray(chunk_mesh.ID);
+        glBindVertexArray(chunk_mesh.ID);
 
-    glBindBuffer(GL_ARRAY_BUFFER, chunk_mesh.buffers[0]);
-    glBufferData(GL_ARRAY_BUFFER, chunk_mesh.vertices.size() * sizeof(float), &chunk_mesh.vertices[0], GL_STATIC_DRAW);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, chunk_mesh.buffers[1]);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, chunk_mesh.indices.size() * sizeof(unsigned), &chunk_mesh.indices[0], GL_STATIC_DRAW);
-    /* Position */
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    // Texture
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-    // Normals
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
-    glEnableVertexAttribArray(2);
+        glBindBuffer(GL_ARRAY_BUFFER, chunk_mesh.buffers[0]);
+        glBufferData(GL_ARRAY_BUFFER, chunk_mesh.vertices.size() * sizeof(float), &chunk_mesh.vertices[0], GL_STATIC_DRAW);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, chunk_mesh.buffers[1]);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, chunk_mesh.indices.size() * sizeof(unsigned), &chunk_mesh.indices[0], GL_STATIC_DRAW);
+        /* Position */
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+        // Texture
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+        glEnableVertexAttribArray(1);
+        // Normals
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
+        glEnableVertexAttribArray(2);
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
 
     return chunk_mesh;
 }
@@ -225,17 +230,16 @@ Terrain MakeTerrain()
 {
     Terrain terrain;
     for (int x = 0; x < kTerrainSize; x++)
-    {
-        for (int z = 0; z < kTerrainSize; z++)
-        {
-            Chunk* chunk = MakeChunk();
-            chunk->position = glm::vec3(x * kChunkSize, 0, z * kChunkSize);
-            ApplyNoise(chunk);
-            chunk->mesh = MakeChunkMesh(chunk);
+        for (int y = 0; y < 2; y++)
+            for (int z = 0; z < kTerrainSize; z++)
+            {
+                Chunk* chunk = MakeChunk();
+                chunk->position = glm::vec3(x * kChunkSize, y * kChunkSize, z * kChunkSize);
+                ApplyNoise(chunk);
+                chunk->mesh = MakeChunkMesh(chunk);
 
-            terrain.chunks.push_back(chunk);
-        }
-    }
+                terrain.chunks.push_back(chunk);
+            }
 
     return terrain;
 }
@@ -252,15 +256,18 @@ void ApplyNoise(Chunk* chunk)
     {
         for (int z = 0; z < kChunkSize; z++)
         {
-            int cube_x = x + kChunkSize;
-            int cube_z = z + kChunkSize;
+            int block_x = x + chunk->position.x;
+            int block_z = z + chunk->position.z;
             /*
                 Generate simplex noise, clamp to [0,1] and multiply by chunk size.
             */
-            float noise = glm::simplex(glm::vec2(x / 16.f, z / 16.f));
-            float height = ((noise + 1) / 2) * 16.f;
-            for (int y = 0; y < height; y++)
-                chunk->blocks[x][y][z] = true;
+            float noise = glm::simplex(glm::vec2(block_x / 64.f, block_z / 64.f));
+            float height = ((noise*noise*noise + 1) / 2) * 64.f;
+            for (int y = 0; y < kChunkSize; y++)
+            {
+                int block_y = y + chunk->position.y;
+                if (block_y < height) chunk->blocks[x][y][z] = true;
+            }
         }
     }
 }
