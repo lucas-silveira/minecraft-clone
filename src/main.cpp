@@ -36,6 +36,9 @@ float pitch = 0.f;
 float last_mouse_x = kScreenWidth / 2.f;
 float last_mouse_y = kScreenHeight / 2.f;
 
+// Lighting
+glm::vec3 light_dir(0.f, 1.f, 1.f); // normalized
+
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
@@ -147,7 +150,7 @@ int main(void)
     gladLoadGL(glfwGetProcAddress);
 
     glEnable(GL_DEPTH_TEST);
-    Shader shader_program("shaders/shader.vert", "shaders/shader.frag");
+    Shader global_shader("shaders/shader.vert", "shaders/shader.frag");
 
     Terrain terrain = MakeTerrain();
 
@@ -175,6 +178,11 @@ int main(void)
     }
     stbi_image_free(data);
 
+    // Send lighting to shaders
+    global_shader.use();
+    global_shader.setVec3("light_color", 1.f, 1.f, 1.f);
+    global_shader.setVec3("light_dir", light_dir);
+
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     while (!glfwWindowShouldClose(window))
@@ -189,12 +197,12 @@ int main(void)
         glClearColor(0.529f, 0.808f, 0.922f, 1.f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        shader_program.use();
+        global_shader.use();
         /* Transformation matrices */
         glm::mat4 view = MakeViewMatrix();
-        shader_program.setMat4("view", view);
+        global_shader.setMat4("view", view);
         glm::mat4 projection = MakeProjectionMatrix();
-        shader_program.setMat4("projection", projection);
+        global_shader.setMat4("projection", projection);
 
         int i = 0;
         for (int x = 0; x < kTerrainSize; x++)
@@ -203,7 +211,7 @@ int main(void)
             {
                 glm::vec3 pos(x*kChunkSize, 0, z*kChunkSize);
                 glm::mat4 model = MakeModelMatrix(pos);
-                shader_program.setMat4("model", model);
+                global_shader.setMat4("model", model);
 
                 RenderChunk(terrain.chunks[i++], texture);
             }
@@ -220,7 +228,7 @@ int main(void)
     }
 
     DeleteTerrain(terrain);
-    shader_program.remove();
+    global_shader.remove();
 
     glfwTerminate();
     return 0;
