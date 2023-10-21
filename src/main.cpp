@@ -204,17 +204,12 @@ int main(void)
         glm::mat4 projection = MakeProjectionMatrix();
         global_shader.setMat4("projection", projection);
 
-        int i = 0;
-        for (int x = 0; x < kTerrainSize; x++)
+        for (int i = 0; i < terrain.chunks.size(); i++)
         {
-            for (int z = 0; z < kTerrainSize; z++)
-            {
-                glm::vec3 pos(x*kChunkSize, 0, z*kChunkSize);
-                glm::mat4 model = MakeModelMatrix(pos);
-                global_shader.setMat4("model", model);
+            glm::mat4 model = MakeModelMatrix(terrain.chunks[i]->position);
+            global_shader.setMat4("model", model);
 
-                RenderChunk(terrain.chunks[i++], texture);
-            }
+            RenderChunk(terrain.chunks[i], texture);
         }
 
         glBindVertexArray(0);

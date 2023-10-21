@@ -11,31 +11,37 @@ const float kBlockSize = 0.5f;
 const unsigned kChunkSize = 16;
 const unsigned kTerrainSize = 5;
 
-bool*** MakeChunk(void)
+Chunk* MakeChunk(void)
 {
-    bool*** chunk = new bool**[kChunkSize];
+    Chunk* chunk = new Chunk();
+    chunk->blocks = new bool**[kChunkSize];
     for (int x = 0; x < kChunkSize; x++)
     {
-        chunk[x] = new bool*[kChunkSize];
+        chunk->blocks[x] = new bool*[kChunkSize];
         for (int y = 0; y < kChunkSize; y++)
         {
-            chunk[x][y] = new bool[kChunkSize];
+            chunk->blocks[x][y] = new bool[kChunkSize];
             for (int z = 0; z < kChunkSize; z++)
-                chunk[x][y][z] = false;
+                chunk->blocks[x][y][z] = false;
         }
     }
     return chunk;
 }
 
-void DeleteChunk(bool*** chunk)
+void DeleteChunk(Chunk* chunk)
 {
     for (int i = 0; i < kChunkSize; ++i) {
         for (int j = 0; j < kChunkSize; ++j) {
-            delete[] chunk[i][j];
+            delete[] chunk->blocks[i][j];
         }
-        delete[] chunk[i];
+        delete[] chunk->blocks[i];
     }
-    delete[] chunk;
+    delete[] chunk->blocks;
+
+    glDeleteVertexArrays(1, &(chunk->mesh.ID));
+    glDeleteBuffers(2, chunk->mesh.buffers);
+
+    delete chunk;
 }
 
 BlockMesh MakeBlockMesh(
@@ -141,27 +147,27 @@ BlockMesh MakeBlockMesh(
     return b;
 }
 
-ChunkMesh MakeChunkMesh(bool*** chunk)
+ChunkMesh MakeChunkMesh(Chunk* chunk)
 {
     ChunkMesh chunk_mesh;
     for (int x = 0; x < kChunkSize; x++)
         for (int y = 0; y < kChunkSize; y++)
             for (int z = 0; z < kChunkSize; z++)
             {
-                if (chunk[x][y][z] == false) continue;
+                if (chunk->blocks[x][y][z] == false) continue;
 
                 bool left_neighbor = false, right_neighbor = false;
                 bool bottom_neighbor = false, top_neighbor = false;
                 bool back_neighbor = false, front_neighbor = false;
 
-                if (x > 0) left_neighbor = chunk[x - 1][y][z];
-                if (x < kChunkSize - 1) right_neighbor = chunk[x + 1][y][z];
+                if (x > 0) left_neighbor = chunk->blocks[x - 1][y][z];
+                if (x < kChunkSize - 1) right_neighbor = chunk->blocks[x + 1][y][z];
 
-                if (y > 0) bottom_neighbor = chunk[x][y - 1][z];
-                if (y < kChunkSize - 1) top_neighbor = chunk[x][y + 1][z];
+                if (y > 0) bottom_neighbor = chunk->blocks[x][y - 1][z];
+                if (y < kChunkSize - 1) top_neighbor = chunk->blocks[x][y + 1][z];
 
-                if (z > 0) back_neighbor = chunk[x][y][z - 1];
-                if (z < kChunkSize - 1) front_neighbor = chunk[x][y][z + 1];
+                if (z > 0) back_neighbor = chunk->blocks[x][y][z - 1];
+                if (z < kChunkSize - 1) front_neighbor = chunk->blocks[x][y][z + 1];
 
                 BlockMesh blockMesh = MakeBlockMesh(
                     x, y, z,
@@ -207,16 +213,10 @@ ChunkMesh MakeChunkMesh(bool*** chunk)
     return chunk_mesh;
 }
 
-void DeleteChunkMesh(ChunkMesh chunk)
-{
-    glDeleteVertexArrays(1, &chunk.ID);
-    glDeleteBuffers(2, chunk.buffers);
-}
-
-void RenderChunk(ChunkMesh chunk, unsigned texture)
+void RenderChunk(Chunk* chunk, unsigned texture)
 {
     glBindTexture(GL_TEXTURE_2D, texture);
-    glBindVertexArray(chunk.ID);
+    glBindVertexArray(chunk->mesh.ID);
 
     glDrawElements(GL_TRIANGLES, 36 * kChunkSize * kChunkSize * kChunkSize, GL_UNSIGNED_INT, 0);
 }
@@ -224,14 +224,17 @@ void RenderChunk(ChunkMesh chunk, unsigned texture)
 Terrain MakeTerrain()
 {
     Terrain terrain;
-    for (int i = 0; i < kTerrainSize*kTerrainSize; i++)
+    for (int x = 0; x < kTerrainSize; x++)
     {
-        bool*** chunk = MakeChunk();
-        ApplyNoise(chunk);
-        ChunkMesh chunk_mesh = MakeChunkMesh(chunk);
-        DeleteChunk(chunk);
+        for (int z = 0; z < kTerrainSize; z++)
+        {
+            Chunk* chunk = MakeChunk();
+            chunk->position = glm::vec3(x * kChunkSize, 0, z * kChunkSize);
+            ApplyNoise(chunk);
+            chunk->mesh = MakeChunkMesh(chunk);
 
-        terrain.chunks.push_back(chunk_mesh);
+            terrain.chunks.push_back(chunk);
+        }
     }
 
     return terrain;
@@ -240,10 +243,10 @@ Terrain MakeTerrain()
 void DeleteTerrain(Terrain terrain)
 {
     for (int i = 0; i < terrain.chunks.size(); i++)
-        DeleteChunkMesh(terrain.chunks[i]);
+        DeleteChunk(terrain.chunks[i]);
 }
 
-void ApplyNoise(bool*** chunk)
+void ApplyNoise(Chunk* chunk)
 {
     for (int x = 0; x < kChunkSize; x++)
     {
@@ -257,7 +260,7 @@ void ApplyNoise(bool*** chunk)
             float noise = glm::simplex(glm::vec2(x / 16.f, z / 16.f));
             float height = ((noise + 1) / 2) * 16.f;
             for (int y = 0; y < height; y++)
-                chunk[x][y][z] = true;
+                chunk->blocks[x][y][z] = true;
         }
     }
 }

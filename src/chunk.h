@@ -1,6 +1,8 @@
 #ifndef CHUNK_H
 #define CHUNK_H
 
+#include <glm/glm.hpp>
+
 #include <vector>
 
 extern const float kBlockSize;
@@ -22,22 +24,27 @@ typedef struct
 } ChunkMesh;
 
 typedef struct {
-    std::vector<ChunkMesh> chunks;
+    bool*** blocks;
+    glm::vec3 position;
+    ChunkMesh mesh;
+} Chunk;
+
+typedef struct {
+    std::vector<Chunk*> chunks;
 } Terrain;
 
-bool*** MakeChunk(void);
-void DeleteChunk(bool*** chunk);
+Chunk* MakeChunk(void);
+void DeleteChunk(Chunk* chunk);
 BlockMesh MakeBlockMesh(
     float x, float y, float z,
     bool left_neighbor, bool right_neighbor,
     bool bottom_neighbor, bool top_neighbor,
     bool back_neighbor, bool front_neighbor
 );
-ChunkMesh MakeChunkMesh(bool*** chunk);
-void RenderChunk(ChunkMesh chunk, unsigned texture);
-void DeleteChunkMesh(ChunkMesh chunk);
+ChunkMesh MakeChunkMesh(Chunk* chunk);
+void RenderChunk(Chunk* chunk, unsigned texture);
 Terrain MakeTerrain();
 void DeleteTerrain(Terrain terrain);
-void ApplyNoise(bool*** chunk);
+void ApplyNoise(Chunk* chunk);
 
 #endif
