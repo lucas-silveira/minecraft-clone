@@ -34,7 +34,8 @@ void DeleteChunk(Chunk* chunk);
 ChunkMesh MakeChunkMesh(Chunk* chunk);
 void RenderChunk(Chunk* chunk, unsigned texture);
 Terrain MakeTerrain();
-void DeleteTerrain(Terrain terrain);
+void DeleteTerrain(Terrain &terrain);
+void PrepareToRender(Terrain &terrain);
 void ApplyNoise(Chunk* chunk);
 float CalculateNoise(int bx, int bz, float seed, int octaves, float smoothness, float roughness);
 

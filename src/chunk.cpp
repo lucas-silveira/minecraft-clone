@@ -88,32 +88,6 @@ ChunkMesh MakeChunkMesh(Chunk* chunk)
                     chunk_mesh.vertices.push_back(blockMesh.vertices[i]);
                 }
             }
-
-    if (chunk_mesh.vertices.size() > 0)
-    {
-        glGenBuffers(2, chunk_mesh.buffers);
-        glGenVertexArrays(1, &chunk_mesh.ID);
-
-        glBindVertexArray(chunk_mesh.ID);
-
-        glBindBuffer(GL_ARRAY_BUFFER, chunk_mesh.buffers[0]);
-        glBufferData(GL_ARRAY_BUFFER, chunk_mesh.vertices.size() * sizeof(float), &chunk_mesh.vertices[0], GL_STATIC_DRAW);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, chunk_mesh.buffers[1]);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, chunk_mesh.indices.size() * sizeof(unsigned), &chunk_mesh.indices[0], GL_STATIC_DRAW);
-        /* Position */
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(0);
-        // Texture
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-        glEnableVertexAttribArray(1);
-        // Normals
-        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
-        glEnableVertexAttribArray(2);
-
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
-    }
-
     return chunk_mesh;
 }
 
@@ -141,14 +115,44 @@ Terrain MakeTerrain()
 
                 terrain.chunks.push_back(chunk);
             }
-
     return terrain;
 }
 
-void DeleteTerrain(Terrain terrain)
+void DeleteTerrain(Terrain &terrain)
 {
     for (int i = 0; i < terrain.chunks.size(); i++)
         DeleteChunk(terrain.chunks[i]);
+}
+
+void PrepareToRender(Terrain &terrain)
+{
+    for (Chunk* chunk : terrain.chunks)
+    {
+        if (chunk->mesh.vertices.size() > 0)
+        {
+            glGenBuffers(2, chunk->mesh.buffers);
+            glGenVertexArrays(1, &chunk->mesh.ID);
+
+            glBindVertexArray(chunk->mesh.ID);
+
+            glBindBuffer(GL_ARRAY_BUFFER, chunk->mesh.buffers[0]);
+            glBufferData(GL_ARRAY_BUFFER, chunk->mesh.vertices.size() * sizeof(float), &chunk->mesh.vertices[0], GL_STATIC_DRAW);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, chunk->mesh.buffers[1]);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, chunk->mesh.indices.size() * sizeof(unsigned), &chunk->mesh.indices[0], GL_STATIC_DRAW);
+            /* Position */
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+            glEnableVertexAttribArray(0);
+            // Texture
+            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+            glEnableVertexAttribArray(1);
+            // Normals
+            glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
+            glEnableVertexAttribArray(2);
+
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            glBindVertexArray(0);
+        }
+    }
 }
 
 void ApplyNoise(Chunk* chunk)

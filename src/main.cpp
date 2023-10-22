@@ -150,6 +150,7 @@ int main(void)
     Shader global_shader("shaders/shader.vert", "shaders/shader.frag");
 
     Terrain terrain = MakeTerrain();
+    PrepareToRender(terrain);
 
     // Load texture
     unsigned int texture;
