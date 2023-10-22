@@ -220,6 +220,8 @@ ChunkMesh MakeChunkMesh(Chunk* chunk)
 
 void RenderChunk(Chunk* chunk, unsigned texture)
 {
+    if (chunk->mesh.vertices.size() == 0) return;
+
     glBindTexture(GL_TEXTURE_2D, texture);
     glBindVertexArray(chunk->mesh.ID);
 
@@ -258,11 +260,22 @@ void ApplyNoise(Chunk* chunk)
         {
             int block_x = x + chunk->position.x;
             int block_z = z + chunk->position.z;
-            /*
-                Generate simplex noise, clamp to [0,1] and multiply by chunk size.
-            */
-            float noise = glm::simplex(glm::vec2(block_x / 64.f, block_z / 64.f));
-            float height = ((noise*noise*noise + 1) / 2) * 64.f;
+
+            int octaves = 6;
+            float seed = 2048.f;
+            float smoothness = 205.f;
+            float roughness = 0.58f;
+            float amplitude = 128.f;
+
+            float noise1 = calc_noise(block_x, block_z, seed, octaves, smoothness, roughness);
+
+            octaves = 4;
+            smoothness = 200.f;
+            roughness = 0.45f;
+
+            float noise2 = calc_noise(block_x, block_z, seed, octaves, smoothness, roughness);
+
+            float height = noise1 * noise2 * amplitude;
             for (int y = 0; y < kChunkSize; y++)
             {
                 int block_y = y + chunk->position.y;
@@ -270,4 +283,26 @@ void ApplyNoise(Chunk* chunk)
             }
         }
     }
+}
+
+float calc_noise(int bx, int bz, float seed, int octaves, float smoothness, float roughness)
+{
+    float acc_noise = 0;
+    float acc_amplitude = 0;
+
+    for (int i = 0; i < octaves; i++)
+    {
+        float frequency = glm::pow(2.f, i);
+        float amplitude = glm::pow(roughness, i);
+
+        float x = bx * frequency / smoothness;
+        float y = bz * frequency / smoothness;
+
+        float noise = glm::simplex(glm::vec3(x + seed, y + seed, seed));
+        noise = (noise + 1.f) / 2.f;
+        acc_noise += noise * amplitude;
+        acc_amplitude += amplitude;
+    }
+
+    return acc_noise / acc_amplitude;
 }

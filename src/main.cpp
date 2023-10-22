@@ -106,7 +106,7 @@ glm::mat4 MakeProjectionMatrix(void)
     float fov = glm::radians(45.f);
     float aspect_ratio = (float)kScreenWidth / kScreenHeight;
     float near_plane = 0.1f;
-    float far_plane = 300.f;
+    float far_plane = 400.f;
     projection = glm::perspective(fov, aspect_ratio, near_plane, far_plane);
     return projection;
 }
