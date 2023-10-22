@@ -36,9 +36,6 @@ float pitch = 0.f;
 float last_mouse_x = kScreenWidth / 2.f;
 float last_mouse_y = kScreenHeight / 2.f;
 
-// Lighting
-glm::vec3 light_dir(0.f, 1.f, 1.f); // normalized
-
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
@@ -109,7 +106,7 @@ glm::mat4 MakeProjectionMatrix(void)
     float fov = glm::radians(45.f);
     float aspect_ratio = (float)kScreenWidth / kScreenHeight;
     float near_plane = 0.1f;
-    float far_plane = 200.f;
+    float far_plane = 300.f;
     projection = glm::perspective(fov, aspect_ratio, near_plane, far_plane);
     return projection;
 }
@@ -177,11 +174,6 @@ int main(void)
         std::cout << "Failed to load texture" << std::endl;
     }
     stbi_image_free(data);
-
-    // Send lighting to shaders
-    global_shader.use();
-    global_shader.setVec3("light_color", 1.f, 1.f, 1.f);
-    global_shader.setVec3("light_dir", light_dir);
 
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 

@@ -11,7 +11,7 @@ const float kBlockSize = 0.5f;
 const unsigned kChunkSize = 32;
 const unsigned kChunkArea = kChunkSize*kChunkSize;
 const unsigned kChunkVolume = kChunkSize*kChunkSize*kChunkSize;
-const unsigned kTerrainSize = 5;
+const unsigned kTerrainSize = 6;
 
 Chunk* MakeChunk(void)
 {
