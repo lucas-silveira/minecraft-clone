@@ -46,6 +46,7 @@
     <None Include="shaders\shader.vert">
       <Filter>Source Files\shaders</Filter>
     </None>
+    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="assets\dirt.jpg">

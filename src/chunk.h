@@ -48,6 +48,6 @@ void RenderChunk(Chunk* chunk, unsigned texture);
 Terrain MakeTerrain();
 void DeleteTerrain(Terrain terrain);
 void ApplyNoise(Chunk* chunk);
-float calc_noise(int bx, int bz, float seed, int octaves, float smoothness, float roughness);
+float CalculateNoise(int bx, int bz, float seed, int octaves, float smoothness, float roughness);
 
 #endif

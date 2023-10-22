@@ -267,13 +267,13 @@ void ApplyNoise(Chunk* chunk)
             float roughness = 0.58f;
             float amplitude = 128.f;
 
-            float noise1 = calc_noise(block_x, block_z, seed, octaves, smoothness, roughness);
+            float noise1 = CalculateNoise(block_x, block_z, seed, octaves, smoothness, roughness);
 
             octaves = 4;
             smoothness = 200.f;
             roughness = 0.45f;
 
-            float noise2 = calc_noise(block_x, block_z, seed, octaves, smoothness, roughness);
+            float noise2 = CalculateNoise(block_x, block_z, seed, octaves, smoothness, roughness);
 
             float height = noise1 * noise2 * amplitude;
             for (int y = 0; y < kChunkSize; y++)
@@ -285,7 +285,7 @@ void ApplyNoise(Chunk* chunk)
     }
 }
 
-float calc_noise(int bx, int bz, float seed, int octaves, float smoothness, float roughness)
+float CalculateNoise(int bx, int bz, float seed, int octaves, float smoothness, float roughness)
 {
     float acc_noise = 0;
     float acc_amplitude = 0;
