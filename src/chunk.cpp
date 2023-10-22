@@ -18,6 +18,7 @@ const unsigned kTerrainHeight = 2;
 Chunk* MakeChunk(void)
 {
     Chunk* chunk = new Chunk();
+    chunk->is_empty = true;
     chunk->blocks = new bool**[kChunkSize];
     for (int x = 0; x < kChunkSize; x++)
     {
@@ -93,8 +94,6 @@ ChunkMesh MakeChunkMesh(Chunk* chunk)
 
 void RenderChunk(Chunk* chunk, unsigned texture)
 {
-    if (chunk->mesh.vertices.size() == 0) return;
-
     glBindTexture(GL_TEXTURE_2D, texture);
     glBindVertexArray(chunk->mesh.ID);
 
@@ -111,8 +110,10 @@ Terrain MakeTerrain()
                 Chunk* chunk = MakeChunk();
                 chunk->position = glm::vec3(x * kChunkSize, y * kChunkSize, z * kChunkSize);
                 ApplyNoise(chunk);
-                chunk->mesh = MakeChunkMesh(chunk);
 
+                if (chunk->is_empty) continue;
+
+                chunk->mesh = MakeChunkMesh(chunk);
                 terrain.chunks.push_back(chunk);
             }
     return terrain;
@@ -128,30 +129,27 @@ void PrepareToRender(Terrain &terrain)
 {
     for (Chunk* chunk : terrain.chunks)
     {
-        if (chunk->mesh.vertices.size() > 0)
-        {
-            glGenBuffers(2, chunk->mesh.buffers);
-            glGenVertexArrays(1, &chunk->mesh.ID);
+        glGenBuffers(2, chunk->mesh.buffers);
+        glGenVertexArrays(1, &chunk->mesh.ID);
 
-            glBindVertexArray(chunk->mesh.ID);
+        glBindVertexArray(chunk->mesh.ID);
 
-            glBindBuffer(GL_ARRAY_BUFFER, chunk->mesh.buffers[0]);
-            glBufferData(GL_ARRAY_BUFFER, chunk->mesh.vertices.size() * sizeof(float), &chunk->mesh.vertices[0], GL_STATIC_DRAW);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, chunk->mesh.buffers[1]);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, chunk->mesh.indices.size() * sizeof(unsigned), &chunk->mesh.indices[0], GL_STATIC_DRAW);
-            /* Position */
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-            glEnableVertexAttribArray(0);
-            // Texture
-            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-            glEnableVertexAttribArray(1);
-            // Normals
-            glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
-            glEnableVertexAttribArray(2);
+        glBindBuffer(GL_ARRAY_BUFFER, chunk->mesh.buffers[0]);
+        glBufferData(GL_ARRAY_BUFFER, chunk->mesh.vertices.size() * sizeof(float), &chunk->mesh.vertices[0], GL_STATIC_DRAW);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, chunk->mesh.buffers[1]);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, chunk->mesh.indices.size() * sizeof(unsigned), &chunk->mesh.indices[0], GL_STATIC_DRAW);
+        /* Position */
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+        // Texture
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+        glEnableVertexAttribArray(1);
+        // Normals
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
+        glEnableVertexAttribArray(2);
 
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
-            glBindVertexArray(0);
-        }
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
     }
 }
 
@@ -182,7 +180,11 @@ void ApplyNoise(Chunk* chunk)
             for (int y = 0; y < kChunkSize; y++)
             {
                 int block_y = y + chunk->position.y;
-                if (block_y < height) chunk->blocks[x][y][z] = true;
+                if (block_y < height)
+                {
+                    chunk->is_empty = false;
+                    chunk->blocks[x][y][z] = true;
+                }
             }
         }
     }

@@ -20,6 +20,7 @@ typedef struct
 } ChunkMesh;
 
 typedef struct {
+    bool is_empty;
     bool*** blocks;
     glm::vec3 position;
     ChunkMesh mesh;
