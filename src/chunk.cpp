@@ -12,6 +12,7 @@ const unsigned kChunkSize = 32;
 const unsigned kChunkArea = kChunkSize*kChunkSize;
 const unsigned kChunkVolume = kChunkSize*kChunkSize*kChunkSize;
 const unsigned kTerrainSize = 6;
+const unsigned kTerrainHeight = 2;
 
 Chunk* MakeChunk(void)
 {
@@ -232,7 +233,7 @@ Terrain MakeTerrain()
 {
     Terrain terrain;
     for (int x = 0; x < kTerrainSize; x++)
-        for (int y = 0; y < 2; y++)
+        for (int y = 0; y < kTerrainHeight; y++)
             for (int z = 0; z < kTerrainSize; z++)
             {
                 Chunk* chunk = MakeChunk();

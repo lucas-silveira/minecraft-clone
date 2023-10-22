@@ -10,6 +10,7 @@ extern const unsigned kChunkSize;
 extern const unsigned kChunkArea;
 extern const unsigned kChunkVolume;
 extern const unsigned kTerrainSize;
+extern const unsigned kTerrainHeight;
 
 typedef struct
 {
