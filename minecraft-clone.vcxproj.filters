@@ -67,5 +67,11 @@
     <Image Include="assets\dirt.jpg">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="assets\particles.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="assets\terrain.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
