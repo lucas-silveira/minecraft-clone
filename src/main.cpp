@@ -151,7 +151,7 @@ int main(void)
     Terrain terrain = MakeTerrain();
     for (Chunk* chunk : terrain.chunks)
     {
-        PrepareToRender(chunk);
+        PrepareChunkToRender(chunk);
     }
 
     LoadTextures(global_shader);
@@ -179,12 +179,12 @@ int main(void)
 
         BindTextures();
 
-        for (int i = 0; i < terrain.chunks.size(); i++)
+        for (Chunk* chunk : terrain.chunks)
         {
-            glm::mat4 model = MakeModelMatrix(terrain.chunks[i]->position);
+            glm::mat4 model = MakeModelMatrix(chunk->position);
             global_shader.setMat4("model", model);
 
-            RenderChunk(terrain.chunks[i]);
+            RenderChunk(chunk);
         }
 
         glBindVertexArray(0);
