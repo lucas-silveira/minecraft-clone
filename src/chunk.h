@@ -35,7 +35,7 @@ typedef struct {
 Chunk* MakeChunk(void);
 void DeleteChunk(Chunk* chunk);
 ChunkMesh MakeChunkMesh(Chunk* chunk);
-void RenderChunk(Chunk* chunk, unsigned texture);
+void RenderChunk(Chunk* chunk);
 Terrain MakeTerrain();
 void DeleteTerrain(Terrain &terrain);
 void PrepareToRender(Terrain &terrain);

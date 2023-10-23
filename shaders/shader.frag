@@ -2,10 +2,27 @@
 
 in vec2 tex_coord;
 in vec3 normal;
+in float tex_type;
 
 out vec4 FragColor;
 
-uniform sampler2D a_tex;
+uniform sampler2D dirt;
+uniform sampler2D grass;
+uniform sampler2D water;
+uniform sampler2D stone;
+uniform sampler2D wood;
+uniform sampler2D sand;
+
+vec4 GetTexture(float type)
+{
+	if (type < .5) return texture(dirt, tex_coord);
+	if (type < 1.5) return texture(grass, tex_coord);
+	if (type < 2.5) return texture(water, tex_coord);
+	if (type < 3.5) return texture(stone, tex_coord);
+	if (type < 4.5) return texture(wood, tex_coord);
+	if (type < 5.5) return texture(sand, tex_coord);
+	return texture(dirt, tex_coord);
+}
 
 void main()
 {
@@ -28,5 +45,5 @@ void main()
 	vec3 diffuse_light2 = ds2 * diffuse_dot2 * light_color;
 
 	vec3 light = (ambient_light + diffuse_light1 + diffuse_light2) * obj_color;
-	FragColor = texture(a_tex, tex_coord) * vec4(light, 1.0);;
+	FragColor = GetTexture(tex_type) * vec4(light, 1.0);
 }
