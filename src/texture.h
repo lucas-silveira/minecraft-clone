@@ -5,6 +5,5 @@
 
 void LoadTexture();
 unsigned GetTexture();
-float* GetTextureCoord(BlockType type);
 
 #endif;

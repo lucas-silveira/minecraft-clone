@@ -40,36 +40,3 @@ unsigned GetTexture()
 {
     return texture;
 }
-
-float* GetTextureCoord(BlockType type)
-{
-    float uv_coordinates[2];
-    switch (type)
-    {
-        case BlockType_Dirt:
-            uv_coordinates[0] = 1.f;
-            uv_coordinates[1] = 1.f;
-            break;
-        case BlockType_Grass:
-            uv_coordinates[0] = 1.f;
-            uv_coordinates[1] = 1.f;
-            break;
-        case BlockType_Water:
-            uv_coordinates[0] = 1.f;
-            uv_coordinates[1] = 1.f;
-            break;
-        case BlockType_Stone:
-            uv_coordinates[0] = 1.f;
-            uv_coordinates[1] = 1.f;
-            break;
-        case BlockType_Wood:
-            uv_coordinates[0] = 1.f;
-            uv_coordinates[1] = 1.f;
-            break;
-        case BlockType_Sand:
-            uv_coordinates[0] = 1.f;
-            uv_coordinates[1] = 1.f;
-            break;
-    }
-    return uv_coordinates;
-}
