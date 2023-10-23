@@ -40,6 +40,7 @@ Terrain MakeTerrain();
 void DeleteTerrain(Terrain &terrain);
 void PrepareToRender(Terrain &terrain);
 void ApplyNoise(Chunk* chunk);
-float CalculateNoise(int bx, int bz, float seed, int octaves, float smoothness, float roughness);
+float CalculateGlobalNoise(int bx, int bz, float seed, int octaves, float smoothness, float roughness);
+float CalculateStoneNoise(int bx, int bz);
 
 #endif

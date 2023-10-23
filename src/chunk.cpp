@@ -172,32 +172,35 @@ void ApplyNoise(Chunk* chunk)
             float roughness = 0.58f;
             float amplitude = 128.f;
 
-            float noise1 = CalculateNoise(block_x, block_z, seed, octaves, smoothness, roughness);
+            float noise1 = CalculateGlobalNoise(block_x, block_z, seed, octaves, smoothness, roughness);
 
             octaves = 4;
             smoothness = 200.f;
             roughness = 0.45f;
 
-            float noise2 = CalculateNoise(block_x, block_z, seed, octaves, smoothness, roughness);
+            float noise2 = CalculateGlobalNoise(block_x, block_z, seed, octaves, smoothness, roughness);
 
-            float height = noise1 * noise2 * amplitude;
+            float terrain_level = noise1 * noise2 * amplitude;
+            float noise3 = CalculateStoneNoise(block_x, block_z);
+            float stone_level = noise3 * noise3;
             for (int y = 0; y < kChunkSize; y++)
             {
                 int block_y = y + chunk->position.y;
-                if (block_y < height)
+                if (block_y < terrain_level)
                 {
                     chunk->is_empty = false;
                     chunk->blocks[x][y][z].is_active = true;
 
+                    if (block_y+1 >= terrain_level) chunk->blocks[x][y][z].type = BlockType_Grass;
                     if (block_y < kChunkSize*noise1) chunk->blocks[x][y][z].type = BlockType_Stone;
-                    if (block_y+1 >= height) chunk->blocks[x][y][z].type = BlockType_Grass;
+                    if (y > stone_level) chunk->blocks[x][y][z].type = BlockType_Stone;
                 }
             }
         }
     }
 }
 
-float CalculateNoise(int bx, int bz, float seed, int octaves, float smoothness, float roughness)
+float CalculateGlobalNoise(int bx, int bz, float seed, int octaves, float smoothness, float roughness)
 {
     float acc_noise = 0;
     float acc_amplitude = 0;
@@ -217,4 +220,9 @@ float CalculateNoise(int bx, int bz, float seed, int octaves, float smoothness, 
     }
 
     return acc_noise / acc_amplitude;
+}
+
+float CalculateStoneNoise(int bx, int bz)
+{
+    return (glm::simplex(glm::vec2(bx / 16.f, bz / 16.f)) + 1.f) / 2.f * 32.f;
 }
