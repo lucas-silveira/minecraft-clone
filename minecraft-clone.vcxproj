@@ -152,6 +152,7 @@
   <ItemGroup>
     <Image Include="assets\dirt.png" />
     <Image Include="assets\grass.png" />
+    <Image Include="assets\leaf.png" />
     <Image Include="assets\sand.png" />
     <Image Include="assets\stone.png" />
     <Image Include="assets\water.png" />
