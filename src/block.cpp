@@ -2,6 +2,14 @@
 
 const float kBlockSize = 0.5f;
 
+Block MakeBlock(BlockType type)
+{
+    Block b;
+    b.is_active = false;
+    b.type = type;
+    return b;
+}
+
 BlockMesh MakeBlockMesh(
     float x, float y, float z,
     bool left_neighbor, bool right_neighbor,

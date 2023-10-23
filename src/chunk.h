@@ -5,6 +5,8 @@
 
 #include <vector>
 
+#include "block.h"
+
 extern const unsigned kChunkSize;
 extern const unsigned kChunkArea;
 extern const unsigned kChunkVolume;
@@ -21,7 +23,7 @@ typedef struct
 
 typedef struct {
     bool is_empty;
-    bool*** blocks;
+    Block*** blocks;
     glm::vec3 position;
     ChunkMesh mesh;
 } Chunk;

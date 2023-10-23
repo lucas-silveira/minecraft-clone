@@ -19,15 +19,15 @@ Chunk* MakeChunk(void)
 {
     Chunk* chunk = new Chunk();
     chunk->is_empty = true;
-    chunk->blocks = new bool**[kChunkSize];
+    chunk->blocks = new Block**[kChunkSize];
     for (int x = 0; x < kChunkSize; x++)
     {
-        chunk->blocks[x] = new bool*[kChunkSize];
+        chunk->blocks[x] = new Block*[kChunkSize];
         for (int y = 0; y < kChunkSize; y++)
         {
-            chunk->blocks[x][y] = new bool[kChunkSize];
+            chunk->blocks[x][y] = new Block[kChunkSize];
             for (int z = 0; z < kChunkSize; z++)
-                chunk->blocks[x][y][z] = false;
+                chunk->blocks[x][y][z] = MakeBlock(BlockType_Dirt);
         }
     }
     return chunk;
@@ -56,20 +56,20 @@ ChunkMesh MakeChunkMesh(Chunk* chunk)
         for (int y = 0; y < kChunkSize; y++)
             for (int z = 0; z < kChunkSize; z++)
             {
-                if (chunk->blocks[x][y][z] == false) continue;
+                if (chunk->blocks[x][y][z].is_active == false) continue;
 
                 bool left_neighbor = false, right_neighbor = false;
                 bool bottom_neighbor = false, top_neighbor = false;
                 bool back_neighbor = false, front_neighbor = false;
 
-                if (x > 0) left_neighbor = chunk->blocks[x - 1][y][z];
-                if (x < kChunkSize - 1) right_neighbor = chunk->blocks[x + 1][y][z];
+                if (x > 0) left_neighbor = chunk->blocks[x - 1][y][z].is_active;
+                if (x < kChunkSize - 1) right_neighbor = chunk->blocks[x + 1][y][z].is_active;
 
-                if (y > 0) bottom_neighbor = chunk->blocks[x][y - 1][z];
-                if (y < kChunkSize - 1) top_neighbor = chunk->blocks[x][y + 1][z];
+                if (y > 0) bottom_neighbor = chunk->blocks[x][y - 1][z].is_active;
+                if (y < kChunkSize - 1) top_neighbor = chunk->blocks[x][y + 1][z].is_active;
 
-                if (z > 0) back_neighbor = chunk->blocks[x][y][z - 1];
-                if (z < kChunkSize - 1) front_neighbor = chunk->blocks[x][y][z + 1];
+                if (z > 0) back_neighbor = chunk->blocks[x][y][z - 1].is_active;
+                if (z < kChunkSize - 1) front_neighbor = chunk->blocks[x][y][z + 1].is_active;
 
                 BlockMesh blockMesh = MakeBlockMesh(
                     x, y, z,
@@ -183,7 +183,7 @@ void ApplyNoise(Chunk* chunk)
                 if (block_y < height)
                 {
                     chunk->is_empty = false;
-                    chunk->blocks[x][y][z] = true;
+                    chunk->blocks[x][y][z].is_active = true;
                 }
             }
         }
