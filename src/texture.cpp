@@ -10,7 +10,7 @@
 #include "common.h"
 #include "shader.h"
 
-Texture textures[6] = {
+Texture textures[7] = {
         {
             0, "dirt", "assets/dirt.png",
         },
@@ -28,6 +28,9 @@ Texture textures[6] = {
         },
         {
             0, "sand", "assets/sand.png",
+        },
+        {
+            0, "leaf", "assets/leaf.png",
         }
 };
 

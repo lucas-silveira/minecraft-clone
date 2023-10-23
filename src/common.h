@@ -8,7 +8,8 @@ enum BlockType
     BlockType_Water,
     BlockType_Stone,
     BlockType_Wood,
-    BlockType_Sand
+    BlockType_Sand,
+    BlockType_Leaf
 };
 
 #endif

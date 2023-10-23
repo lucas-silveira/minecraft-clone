@@ -75,10 +75,67 @@ std::array<float, 48> GetTexCoord(BlockType type)
         uv_coord[46] = 0.f;
         uv_coord[47] = .5f;
         break;
+    case BlockType_Wood:
+        // Back
+        uv_coord[0] = .5f;
+        uv_coord[1] = 0.f;
+        uv_coord[2] = 1.f;
+        uv_coord[3] = 0.f;
+        uv_coord[4] = 1.f;
+        uv_coord[5] = 1.f;
+        uv_coord[6] = .5f;
+        uv_coord[7] = 1.f;
+        // Front
+        uv_coord[8] = .5f;
+        uv_coord[9] = 0.f;
+        uv_coord[10] = 1.f;
+        uv_coord[11] = 0.f;
+        uv_coord[12] = 1.f;
+        uv_coord[13] = 1.f;
+        uv_coord[14] = .5f;
+        uv_coord[15] = 1.f;
+        // Left
+        uv_coord[16] = .5f;
+        uv_coord[17] = 1.f;
+        uv_coord[18] = .5f;
+        uv_coord[19] = 0.f;
+        uv_coord[20] = 1.f;
+        uv_coord[21] = 0.f;
+        uv_coord[22] = 1.f;
+        uv_coord[23] = 1.f;
+        // Right
+        uv_coord[24] = 1.f;
+        uv_coord[25] = 0.f;
+        uv_coord[26] = 1.f;
+        uv_coord[27] = 1.f;
+        uv_coord[28] = .5f;
+        uv_coord[29] = 1.f;
+        uv_coord[30] = .5f;
+        uv_coord[31] = 0.f;
+        // Bottom
+        uv_coord[32] = 0.f;
+        uv_coord[33] = 0.f;
+        uv_coord[34] = .5f;
+        uv_coord[35] = 0.f;
+        uv_coord[36] = .5f;
+        uv_coord[37] = 1.f;
+        uv_coord[38] = 0.f;
+        uv_coord[39] = 1.f;
+        // Top
+        uv_coord[40] = 0.f;
+        uv_coord[41] = 0.f;
+        uv_coord[42] = .5f;
+        uv_coord[43] = 0.f;
+        uv_coord[44] = .5f;
+        uv_coord[45] = 1.f;
+        uv_coord[46] = 0.f;
+        uv_coord[47] = 1.f;
+        break;
     case BlockType_Dirt:
     case BlockType_Water:
     case BlockType_Stone:
     case BlockType_Sand:
+    case BlockType_Leaf:
     default:
         // Back
         uv_coord[0] = 0.f;

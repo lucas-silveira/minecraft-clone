@@ -12,6 +12,7 @@ uniform sampler2D water;
 uniform sampler2D stone;
 uniform sampler2D wood;
 uniform sampler2D sand;
+uniform sampler2D leaf;
 
 vec4 GetTexture(float type)
 {
@@ -21,6 +22,7 @@ vec4 GetTexture(float type)
 	if (type < 3.5) return texture(stone, tex_coord);
 	if (type < 4.5) return texture(wood, tex_coord);
 	if (type < 5.5) return texture(sand, tex_coord);
+	if (type < 6.5) return texture(leaf, tex_coord);
 	return texture(dirt, tex_coord);
 }
 
