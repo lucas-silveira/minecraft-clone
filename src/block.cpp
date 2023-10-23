@@ -55,10 +55,10 @@ BlockMesh MakeBlockMesh(
     {
         unsigned offset = vertices.size() / 9;
         vertices.insert(vertices.end(), {
-            x - kBlockSize, y + kBlockSize, z - kBlockSize,  0.0f, 0.0f,  -1.0f,  0.0f,  0.0f, (float)type,
-            x - kBlockSize, y - kBlockSize, z - kBlockSize,  1.0f, 0.0f,  -1.0f,  0.0f,  0.0f, (float)type,
-            x - kBlockSize, y - kBlockSize, z + kBlockSize,  1.0f, 1.0f,  -1.0f,  0.0f,  0.0f, (float)type,
-            x - kBlockSize, y + kBlockSize, z + kBlockSize,  0.0f, 1.0f,  -1.0f,  0.0f,  0.0f, (float)type,
+            x - kBlockSize, y + kBlockSize, z - kBlockSize,  0.0f, 1.0f,  -1.0f,  0.0f,  0.0f, (float)type,
+            x - kBlockSize, y - kBlockSize, z - kBlockSize,  0.0f, 0.0f,  -1.0f,  0.0f,  0.0f, (float)type,
+            x - kBlockSize, y - kBlockSize, z + kBlockSize,  1.0f, 0.0f,  -1.0f,  0.0f,  0.0f, (float)type,
+            x - kBlockSize, y + kBlockSize, z + kBlockSize,  1.0f, 1.0f,  -1.0f,  0.0f,  0.0f, (float)type,
             });
         indices.insert(indices.end(), {
             3 + offset, 0 + offset, 1 + offset,
@@ -69,10 +69,10 @@ BlockMesh MakeBlockMesh(
     {
         unsigned offset = vertices.size() / 9;
         vertices.insert(vertices.end(), {
-            x + kBlockSize, y - kBlockSize, z - kBlockSize,  0.0f, 0.0f,  1.0f,  0.0f,  0.0f, (float)type,
-            x + kBlockSize, y + kBlockSize, z - kBlockSize,  1.0f, 0.0f,  1.0f,  0.0f,  0.0f, (float)type,
-            x + kBlockSize, y + kBlockSize, z + kBlockSize,  1.0f, 1.0f,  1.0f,  0.0f,  0.0f, (float)type,
-            x + kBlockSize, y - kBlockSize, z + kBlockSize,  0.0f, 1.0f,  1.0f,  0.0f,  0.0f, (float)type,
+            x + kBlockSize, y - kBlockSize, z - kBlockSize,  1.0f, 0.0f,  1.0f,  0.0f,  0.0f, (float)type,
+            x + kBlockSize, y + kBlockSize, z - kBlockSize,  1.0f, 1.0f,  1.0f,  0.0f,  0.0f, (float)type,
+            x + kBlockSize, y + kBlockSize, z + kBlockSize,  0.0f, 1.0f,  1.0f,  0.0f,  0.0f, (float)type,
+            x + kBlockSize, y - kBlockSize, z + kBlockSize,  0.0f, 0.0f,  1.0f,  0.0f,  0.0f, (float)type,
             });
         indices.insert(indices.end(), {
             0 + offset, 1 + offset, 2 + offset,
