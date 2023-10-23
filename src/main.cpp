@@ -151,7 +151,7 @@ int main(void)
     Terrain terrain = MakeTerrain();
     PrepareToRender(terrain);
 
-    LoadTexture();
+    LoadTextures(global_shader);
 
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -174,12 +174,19 @@ int main(void)
         glm::mat4 projection = MakeProjectionMatrix();
         global_shader.setMat4("projection", projection);
 
+        Texture* textures = GetTextures();
+        for (int i = 0; i < sizeof(*textures) / sizeof(unsigned); i++)
+        {
+            glActiveTexture(GL_TEXTURE0 + i);
+            glBindTexture(GL_TEXTURE_2D, textures[i].ID);
+        }
+
         for (int i = 0; i < terrain.chunks.size(); i++)
         {
             glm::mat4 model = MakeModelMatrix(terrain.chunks[i]->position);
             global_shader.setMat4("model", model);
 
-            RenderChunk(terrain.chunks[i], GetTexture());
+            RenderChunk(terrain.chunks[i]);
         }
 
         glBindVertexArray(0);

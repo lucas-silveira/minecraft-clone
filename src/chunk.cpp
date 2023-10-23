@@ -56,7 +56,8 @@ ChunkMesh MakeChunkMesh(Chunk* chunk)
         for (int y = 0; y < kChunkSize; y++)
             for (int z = 0; z < kChunkSize; z++)
             {
-                if (chunk->blocks[x][y][z].is_active == false) continue;
+                Block block = chunk->blocks[x][y][z];
+                if (block.is_active == false) continue;
 
                 bool left_neighbor = false, right_neighbor = false;
                 bool bottom_neighbor = false, top_neighbor = false;
@@ -72,6 +73,7 @@ ChunkMesh MakeChunkMesh(Chunk* chunk)
                 if (z < kChunkSize - 1) front_neighbor = chunk->blocks[x][y][z + 1].is_active;
 
                 BlockMesh blockMesh = MakeBlockMesh(
+                    block.type,
                     x, y, z,
                     left_neighbor, right_neighbor,
                     bottom_neighbor, top_neighbor,
@@ -80,7 +82,7 @@ ChunkMesh MakeChunkMesh(Chunk* chunk)
 
                 for (int i = 0; i < blockMesh.indices.size(); i++)
                 {
-                    unsigned offset = chunk_mesh.vertices.size() / 8;
+                    unsigned offset = chunk_mesh.vertices.size() / 9;
                     chunk_mesh.indices.push_back(blockMesh.indices[i] + offset);
                 }
                 
@@ -92,12 +94,11 @@ ChunkMesh MakeChunkMesh(Chunk* chunk)
     return chunk_mesh;
 }
 
-void RenderChunk(Chunk* chunk, unsigned texture)
+void RenderChunk(Chunk* chunk)
 {
-    glBindTexture(GL_TEXTURE_2D, texture);
     glBindVertexArray(chunk->mesh.ID);
 
-    glDrawElements(GL_TRIANGLES, 36 * kChunkSize * kChunkSize * kChunkSize, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, 36 * kChunkVolume, GL_UNSIGNED_INT, 0);
 }
 
 Terrain MakeTerrain()
@@ -139,14 +140,17 @@ void PrepareToRender(Terrain &terrain)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, chunk->mesh.buffers[1]);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, chunk->mesh.indices.size() * sizeof(unsigned), &chunk->mesh.indices[0], GL_STATIC_DRAW);
         /* Position */
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
         // Texture
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(3 * sizeof(float)));
         glEnableVertexAttribArray(1);
         // Normals
-        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(5 * sizeof(float)));
         glEnableVertexAttribArray(2);
+        // Texture Type
+        glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(8 * sizeof(float)));
+        glEnableVertexAttribArray(3);
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);

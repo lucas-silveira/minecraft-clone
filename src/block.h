@@ -21,6 +21,7 @@ typedef struct
 
 Block MakeBlock(BlockType type);
 BlockMesh MakeBlockMesh(
+    BlockType type,
     float x, float y, float z,
     bool left_neighbor, bool right_neighbor,
     bool bottom_neighbor, bool top_neighbor,

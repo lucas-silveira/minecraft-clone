@@ -1,5 +1,7 @@
 #include "block.h"
 
+#include "common.h"
+
 const float kBlockSize = 0.5f;
 
 Block MakeBlock(BlockType type)
@@ -11,6 +13,7 @@ Block MakeBlock(BlockType type)
 }
 
 BlockMesh MakeBlockMesh(
+    BlockType type,
     float x, float y, float z,
     bool left_neighbor, bool right_neighbor,
     bool bottom_neighbor, bool top_neighbor,
@@ -23,10 +26,10 @@ BlockMesh MakeBlockMesh(
     if (!back_neighbor)
     {
         vertices.insert(vertices.end(), {
-            x - kBlockSize, y - kBlockSize, z - kBlockSize,  0.0f, 0.0f,  0.0f,  0.0f, -1.0f,
-            x + kBlockSize, y - kBlockSize, z - kBlockSize,  1.0f, 0.0f,  0.0f,  0.0f, -1.0f,
-            x + kBlockSize, y + kBlockSize, z - kBlockSize,  1.0f, 1.0f,  0.0f,  0.0f, -1.0f,
-            x - kBlockSize, y + kBlockSize, z - kBlockSize,  0.0f, 1.0f,  0.0f,  0.0f, -1.0f,
+            x - kBlockSize, y - kBlockSize, z - kBlockSize,  0.0f, 0.0f,  0.0f,  0.0f, -1.0f, (float)type,
+            x + kBlockSize, y - kBlockSize, z - kBlockSize,  1.0f, 0.0f,  0.0f,  0.0f, -1.0f, (float)type,
+            x + kBlockSize, y + kBlockSize, z - kBlockSize,  1.0f, 1.0f,  0.0f,  0.0f, -1.0f, (float)type,
+            x - kBlockSize, y + kBlockSize, z - kBlockSize,  0.0f, 1.0f,  0.0f,  0.0f, -1.0f, (float)type,
             });
         indices.insert(indices.end(), {
             0, 3, 2,
@@ -35,12 +38,12 @@ BlockMesh MakeBlockMesh(
     }
     if (!front_neighbor)
     {
-        unsigned offset = vertices.size() / 8;
+        unsigned offset = vertices.size() / 9;
         vertices.insert(vertices.end(), {
-            x - kBlockSize, y - kBlockSize, z + kBlockSize,  0.0f, 0.0f,  0.0f,  0.0f,  1.0f,
-            x + kBlockSize, y - kBlockSize, z + kBlockSize,  1.0f, 0.0f,  0.0f,  0.0f,  1.0f,
-            x + kBlockSize, y + kBlockSize, z + kBlockSize,  1.0f, 1.0f,  0.0f,  0.0f,  1.0f,
-            x - kBlockSize, y + kBlockSize, z + kBlockSize,  0.0f, 1.0f,  0.0f,  0.0f,  1.0f,
+            x - kBlockSize, y - kBlockSize, z + kBlockSize,  0.0f, 0.0f,  0.0f,  0.0f,  1.0f, (float)type,
+            x + kBlockSize, y - kBlockSize, z + kBlockSize,  1.0f, 0.0f,  0.0f,  0.0f,  1.0f, (float)type,
+            x + kBlockSize, y + kBlockSize, z + kBlockSize,  1.0f, 1.0f,  0.0f,  0.0f,  1.0f, (float)type,
+            x - kBlockSize, y + kBlockSize, z + kBlockSize,  0.0f, 1.0f,  0.0f,  0.0f,  1.0f, (float)type,
             });
         indices.insert(indices.end(), {
             0 + offset, 1 + offset, 2 + offset,
@@ -50,12 +53,12 @@ BlockMesh MakeBlockMesh(
 
     if (!left_neighbor)
     {
-        unsigned offset = vertices.size() / 8;
+        unsigned offset = vertices.size() / 9;
         vertices.insert(vertices.end(), {
-            x - kBlockSize, y + kBlockSize, z - kBlockSize,  0.0f, 0.0f,  -1.0f,  0.0f,  0.0f,
-            x - kBlockSize, y - kBlockSize, z - kBlockSize,  1.0f, 0.0f,  -1.0f,  0.0f,  0.0f,
-            x - kBlockSize, y - kBlockSize, z + kBlockSize,  1.0f, 1.0f,  -1.0f,  0.0f,  0.0f,
-            x - kBlockSize, y + kBlockSize, z + kBlockSize,  0.0f, 1.0f,  -1.0f,  0.0f,  0.0f,
+            x - kBlockSize, y + kBlockSize, z - kBlockSize,  0.0f, 0.0f,  -1.0f,  0.0f,  0.0f, (float)type,
+            x - kBlockSize, y - kBlockSize, z - kBlockSize,  1.0f, 0.0f,  -1.0f,  0.0f,  0.0f, (float)type,
+            x - kBlockSize, y - kBlockSize, z + kBlockSize,  1.0f, 1.0f,  -1.0f,  0.0f,  0.0f, (float)type,
+            x - kBlockSize, y + kBlockSize, z + kBlockSize,  0.0f, 1.0f,  -1.0f,  0.0f,  0.0f, (float)type,
             });
         indices.insert(indices.end(), {
             3 + offset, 0 + offset, 1 + offset,
@@ -64,12 +67,12 @@ BlockMesh MakeBlockMesh(
     }
     if (!right_neighbor)
     {
-        unsigned offset = vertices.size() / 8;
+        unsigned offset = vertices.size() / 9;
         vertices.insert(vertices.end(), {
-            x + kBlockSize, y - kBlockSize, z - kBlockSize,  0.0f, 0.0f,  1.0f,  0.0f,  0.0f,
-            x + kBlockSize, y + kBlockSize, z - kBlockSize,  1.0f, 0.0f,  1.0f,  0.0f,  0.0f,
-            x + kBlockSize, y + kBlockSize, z + kBlockSize,  1.0f, 1.0f,  1.0f,  0.0f,  0.0f,
-            x + kBlockSize, y - kBlockSize, z + kBlockSize,  0.0f, 1.0f,  1.0f,  0.0f,  0.0f,
+            x + kBlockSize, y - kBlockSize, z - kBlockSize,  0.0f, 0.0f,  1.0f,  0.0f,  0.0f, (float)type,
+            x + kBlockSize, y + kBlockSize, z - kBlockSize,  1.0f, 0.0f,  1.0f,  0.0f,  0.0f, (float)type,
+            x + kBlockSize, y + kBlockSize, z + kBlockSize,  1.0f, 1.0f,  1.0f,  0.0f,  0.0f, (float)type,
+            x + kBlockSize, y - kBlockSize, z + kBlockSize,  0.0f, 1.0f,  1.0f,  0.0f,  0.0f, (float)type,
             });
         indices.insert(indices.end(), {
             0 + offset, 1 + offset, 2 + offset,
@@ -79,12 +82,12 @@ BlockMesh MakeBlockMesh(
 
     if (!bottom_neighbor)
     {
-        unsigned offset = vertices.size() / 8;
+        unsigned offset = vertices.size() / 9;
         vertices.insert(vertices.end(), {
-            x - kBlockSize, y - kBlockSize, z - kBlockSize,  0.0f, 0.0f,  1.0f, -1.0f,  0.0f,
-            x + kBlockSize, y - kBlockSize, z - kBlockSize,  1.0f, 0.0f,  1.0f, -1.0f,  0.0f,
-            x + kBlockSize, y - kBlockSize, z + kBlockSize,  1.0f, 1.0f,  1.0f, -1.0f,  0.0f,
-            x - kBlockSize, y - kBlockSize, z + kBlockSize,  0.0f, 1.0f,  1.0f, -1.0f,  0.0f,
+            x - kBlockSize, y - kBlockSize, z - kBlockSize,  0.0f, 0.0f,  1.0f, -1.0f,  0.0f, (float)type,
+            x + kBlockSize, y - kBlockSize, z - kBlockSize,  1.0f, 0.0f,  1.0f, -1.0f,  0.0f, (float)type,
+            x + kBlockSize, y - kBlockSize, z + kBlockSize,  1.0f, 1.0f,  1.0f, -1.0f,  0.0f, (float)type,
+            x - kBlockSize, y - kBlockSize, z + kBlockSize,  0.0f, 1.0f,  1.0f, -1.0f,  0.0f, (float)type,
             });
         indices.insert(indices.end(), {
             0 + offset, 1 + offset, 2 + offset,
@@ -93,12 +96,12 @@ BlockMesh MakeBlockMesh(
     }
     if (!top_neighbor)
     {
-        unsigned offset = vertices.size() / 8;
+        unsigned offset = vertices.size() / 9;
         vertices.insert(vertices.end(), {
-            x + kBlockSize, y + kBlockSize, z - kBlockSize,  0.0f, 0.0f,  0.0f,  1.0f,  0.0f,
-            x - kBlockSize, y + kBlockSize, z - kBlockSize,  1.0f, 0.0f,  0.0f,  1.0f,  0.0f,
-            x - kBlockSize, y + kBlockSize, z + kBlockSize,  1.0f, 1.0f,  0.0f,  1.0f,  0.0f,
-            x + kBlockSize, y + kBlockSize, z + kBlockSize,  0.0f, 1.0f,  0.0f,  1.0f,  0.0f,
+            x + kBlockSize, y + kBlockSize, z - kBlockSize,  0.0f, 0.0f,  0.0f,  1.0f,  0.0f, (float)type,
+            x - kBlockSize, y + kBlockSize, z - kBlockSize,  1.0f, 0.0f,  0.0f,  1.0f,  0.0f, (float)type,
+            x - kBlockSize, y + kBlockSize, z + kBlockSize,  1.0f, 1.0f,  0.0f,  1.0f,  0.0f, (float)type,
+            x + kBlockSize, y + kBlockSize, z + kBlockSize,  0.0f, 1.0f,  0.0f,  1.0f,  0.0f, (float)type,
             });
         indices.insert(indices.end(), {
             0 + offset, 1 + offset, 2 + offset,

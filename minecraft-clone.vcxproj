@@ -150,7 +150,12 @@
     <None Include="shaders\shader.vert" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="assets\dirt.jpg" />
+    <Image Include="assets\dirt.png" />
+    <Image Include="assets\grass.png" />
+    <Image Include="assets\sand.png" />
+    <Image Include="assets\stone.png" />
+    <Image Include="assets\water.png" />
+    <Image Include="assets\wood.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
