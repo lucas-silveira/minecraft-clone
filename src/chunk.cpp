@@ -120,16 +120,8 @@ Terrain MakeTerrain()
     return terrain;
 }
 
-void DeleteTerrain(Terrain &terrain)
+void PrepareToRender(Chunk* chunk)
 {
-    for (int i = 0; i < terrain.chunks.size(); i++)
-        DeleteChunk(terrain.chunks[i]);
-}
-
-void PrepareToRender(Terrain &terrain)
-{
-    for (Chunk* chunk : terrain.chunks)
-    {
         glGenBuffers(2, chunk->mesh.buffers);
         glGenVertexArrays(1, &chunk->mesh.ID);
 
@@ -155,7 +147,6 @@ void PrepareToRender(Terrain &terrain)
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
     }
-}
 
 void ApplyNoise(Chunk* chunk)
 {

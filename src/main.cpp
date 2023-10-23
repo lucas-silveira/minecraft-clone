@@ -149,7 +149,10 @@ int main(void)
     Shader global_shader("shaders/shader.vert", "shaders/shader.frag");
 
     Terrain terrain = MakeTerrain();
-    PrepareToRender(terrain);
+    for (Chunk* chunk : terrain.chunks)
+    {
+        PrepareToRender(chunk);
+    }
 
     LoadTextures(global_shader);
 
@@ -194,7 +197,7 @@ int main(void)
         //if (delta_time < msPerFrame) Sleep((msPerFrame - delta_time)*1000.f);
     }
 
-    DeleteTerrain(terrain);
+    for (Chunk* chunk : terrain.chunks) DeleteChunk(chunk);
     global_shader.remove();
 
     glfwTerminate();
