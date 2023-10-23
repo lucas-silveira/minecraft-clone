@@ -97,7 +97,6 @@ ChunkMesh MakeChunkMesh(Chunk* chunk)
 void RenderChunk(Chunk* chunk)
 {
     glBindVertexArray(chunk->mesh.ID);
-
     glDrawElements(GL_TRIANGLES, 36 * kChunkVolume, GL_UNSIGNED_INT, 0);
 }
 
@@ -122,31 +121,31 @@ Terrain MakeTerrain()
 
 void PrepareToRender(Chunk* chunk)
 {
-        glGenBuffers(2, chunk->mesh.buffers);
-        glGenVertexArrays(1, &chunk->mesh.ID);
+    glGenBuffers(2, chunk->mesh.buffers);
+    glGenVertexArrays(1, &chunk->mesh.ID);
 
-        glBindVertexArray(chunk->mesh.ID);
+    glBindVertexArray(chunk->mesh.ID);
 
-        glBindBuffer(GL_ARRAY_BUFFER, chunk->mesh.buffers[0]);
-        glBufferData(GL_ARRAY_BUFFER, chunk->mesh.vertices.size() * sizeof(float), &chunk->mesh.vertices[0], GL_STATIC_DRAW);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, chunk->mesh.buffers[1]);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, chunk->mesh.indices.size() * sizeof(unsigned), &chunk->mesh.indices[0], GL_STATIC_DRAW);
-        /* Position */
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(0);
-        // Texture
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(3 * sizeof(float)));
-        glEnableVertexAttribArray(1);
-        // Normals
-        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(5 * sizeof(float)));
-        glEnableVertexAttribArray(2);
-        // Texture Type
-        glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(8 * sizeof(float)));
-        glEnableVertexAttribArray(3);
+    glBindBuffer(GL_ARRAY_BUFFER, chunk->mesh.buffers[0]);
+    glBufferData(GL_ARRAY_BUFFER, chunk->mesh.vertices.size() * sizeof(float), &chunk->mesh.vertices[0], GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, chunk->mesh.buffers[1]);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, chunk->mesh.indices.size() * sizeof(unsigned), &chunk->mesh.indices[0], GL_STATIC_DRAW);
+    /* Position */
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    // Texture
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    // Normals
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(5 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+    // Texture Type
+    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(8 * sizeof(float)));
+    glEnableVertexAttribArray(3);
 
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
-    }
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+}
 
 void ApplyNoise(Chunk* chunk)
 {
@@ -170,10 +169,12 @@ void ApplyNoise(Chunk* chunk)
             roughness = 0.45f;
 
             float noise2 = CalculateGlobalNoise(block_x, block_z, seed, octaves, smoothness, roughness);
+            float noise3 = CalculateStoneNoise(block_x, block_z);
 
             float terrain_level = noise1 * noise2 * amplitude;
-            float noise3 = CalculateStoneNoise(block_x, block_z);
-            float stone_level = noise3 * noise3;
+            float dirt_level = kChunkSize/2.f + 2.f;
+            float stone_level = kChunkSize * noise1;
+            float stone_noise = noise3 * noise3;
             for (int y = 0; y < kChunkSize; y++)
             {
                 int block_y = y + chunk->position.y;
@@ -182,9 +183,9 @@ void ApplyNoise(Chunk* chunk)
                     chunk->is_empty = false;
                     chunk->blocks[x][y][z].is_active = true;
 
-                    if (block_y+1 >= terrain_level) chunk->blocks[x][y][z].type = BlockType_Grass;
-                    if (block_y < kChunkSize*noise1) chunk->blocks[x][y][z].type = BlockType_Stone;
-                    if (y > stone_level) chunk->blocks[x][y][z].type = BlockType_Stone;
+                    if (block_y+1 >= terrain_level && block_y > dirt_level) chunk->blocks[x][y][z].type = BlockType_Grass;
+                    if (block_y < stone_level) chunk->blocks[x][y][z].type = BlockType_Stone;
+                    if (y > stone_noise && block_y > kChunkSize) chunk->blocks[x][y][z].type = BlockType_Stone;
                 }
             }
         }
