@@ -188,6 +188,9 @@ void ApplyNoise(Chunk* chunk)
                 {
                     chunk->is_empty = false;
                     chunk->blocks[x][y][z].is_active = true;
+
+                    if (block_y < kChunkSize*noise1) chunk->blocks[x][y][z].type = BlockType_Stone;
+                    if (block_y+1 >= height) chunk->blocks[x][y][z].type = BlockType_Grass;
                 }
             }
         }
