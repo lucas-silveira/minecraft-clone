@@ -4,14 +4,13 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/noise.hpp>
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb/stb_image.h>
 #include <windows.h>
 
 #include <iostream>
 #include <sstream>
 
 #include "shader.h"
+#include "texture.h"
 #include "chunk.h"
 
 // Settings
@@ -152,29 +151,7 @@ int main(void)
     Terrain terrain = MakeTerrain();
     PrepareToRender(terrain);
 
-    // Load texture
-    unsigned int texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-    int width, height, nr_channels;
-    stbi_set_flip_vertically_on_load(true);
-    unsigned char* data = stbi_load("assets/dirt.jpg", &width, &height, &nr_channels, 0);
-
-    if (data)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-        std::cout << "Failed to load texture" << std::endl;
-    }
-    stbi_image_free(data);
+    LoadTexture();
 
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -202,7 +179,7 @@ int main(void)
             glm::mat4 model = MakeModelMatrix(terrain.chunks[i]->position);
             global_shader.setMat4("model", model);
 
-            RenderChunk(terrain.chunks[i], texture);
+            RenderChunk(terrain.chunks[i], GetTexture());
         }
 
         glBindVertexArray(0);

@@ -3,17 +3,9 @@
 
 #include <vector>
 
-extern const float kBlockSize;
+#include "common.h"
 
-enum BlockType
-{
-    BlockType_Dirt = 0,
-    BlockType_Grass,
-    BlockType_Water,
-    BlockType_Stone,
-    BlockType_Wood,
-    BlockType_Sand
-};
+extern const float kBlockSize;
 
 typedef struct
 {
