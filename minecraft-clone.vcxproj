@@ -151,6 +151,8 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="assets\dirt.jpg" />
+    <Image Include="assets\particles.png" />
+    <Image Include="assets\terrain.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
