@@ -85,11 +85,7 @@ ChunkMesh MakeChunkMesh(Chunk* chunk)
                     unsigned offset = chunk_mesh.vertices.size() / 9;
                     chunk_mesh.indices.push_back(blockMesh.indices[i] + offset);
                 }
-                
-                for (int i = 0; i < blockMesh.vertices.size(); i++)
-                {
-                    chunk_mesh.vertices.push_back(blockMesh.vertices[i]);
-                }
+                chunk_mesh.vertices.insert(chunk_mesh.vertices.end(), blockMesh.vertices.begin(), blockMesh.vertices.end());
             }
     return chunk_mesh;
 }
@@ -119,7 +115,7 @@ Terrain MakeTerrain()
     return terrain;
 }
 
-void PrepareToRender(Chunk* chunk)
+void PrepareChunkToRender(Chunk* chunk)
 {
     glGenBuffers(2, chunk->mesh.buffers);
     glGenVertexArrays(1, &chunk->mesh.ID);
