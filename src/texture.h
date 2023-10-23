@@ -11,6 +11,6 @@ typedef struct {
 } Texture;
 
 void LoadTextures(Shader &shader);
-Texture* GetTextures();
+void BindTextures();
 
 #endif;

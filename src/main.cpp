@@ -174,12 +174,7 @@ int main(void)
         glm::mat4 projection = MakeProjectionMatrix();
         global_shader.setMat4("projection", projection);
 
-        Texture* textures = GetTextures();
-        for (int i = 0; i < sizeof(*textures) / sizeof(unsigned); i++)
-        {
-            glActiveTexture(GL_TEXTURE0 + i);
-            glBindTexture(GL_TEXTURE_2D, textures[i].ID);
-        }
+        BindTextures();
 
         for (int i = 0; i < terrain.chunks.size(); i++)
         {

@@ -34,7 +34,7 @@ Texture textures[6] = {
 void LoadTextures(Shader &shader)
 {
     shader.use();
-    for (int i = 0; i < 6; i++)
+    for (int i = 0; i < sizeof(textures) / sizeof(textures[0]); i++)
     {
         glGenTextures(1, &textures[i].ID);
         glBindTexture(GL_TEXTURE_2D, textures[i].ID);
@@ -62,7 +62,11 @@ void LoadTextures(Shader &shader)
     }
 }
 
-Texture* GetTextures()
+void BindTextures()
 {
-    return textures;
+    for (int i = 0; i < sizeof(textures) / sizeof(textures[0]); i++)
+    {
+        glActiveTexture(GL_TEXTURE0 + i);
+        glBindTexture(GL_TEXTURE_2D, textures[i].ID);
+    }
 }
