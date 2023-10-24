@@ -10,6 +10,7 @@
 #include <sstream>
 
 #include "shader.h"
+#include "camera.h"
 #include "texture.h"
 #include "chunk.h"
 #include "chunk-management.h"
@@ -19,22 +20,17 @@ const unsigned int kScreenWidth = 1280;
 const unsigned int kScreenHeight = 720;
 const unsigned int kFps = 60;
 
-GLFWwindow* window;
-
 // Time
 float delta_time = 0.f;
 float last_frame = 0.f;
 
 // Camera
-glm::vec3 camera_pos = glm::vec3(0.f, 45.f, 45.f);
-glm::vec3 camera_front = glm::vec3(0.f, 0.f, -1.f);
-glm::vec3 camera_up = glm::vec3(0.f, 1.f, 0.f);
+Camera camera(glm::vec3(0.f, 45.f, 0.f));
 bool first_mouse = true;
-float fov = 45.f;
-float yaw = -90.f;
-float pitch = 0.f;
 float last_mouse_x = kScreenWidth / 2.f;
 float last_mouse_y = kScreenHeight / 2.f;
+
+GLFWwindow* window;
 
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
@@ -43,7 +39,6 @@ void FramebufferSizeCallback(GLFWwindow* window, int width, int height)
 
 void MouseCallback(GLFWwindow* window, double xpos, double ypos)
 {
-    // Avoid camera jump to the mouse position from the center
     if (first_mouse)
     {
         last_mouse_x = xpos;
@@ -52,22 +47,11 @@ void MouseCallback(GLFWwindow* window, double xpos, double ypos)
     }
 
     float xoffset = xpos - last_mouse_x;
-    float yoffset = last_mouse_y - ypos; // reversed: y ranges from bottom to top
+    float yoffset = last_mouse_y - ypos;
     last_mouse_x = xpos;
     last_mouse_y = ypos;
 
-    float sensitivity = 0.05f; // avoid strong movements
-    xoffset *= sensitivity;
-    yoffset *= sensitivity;
-
-    yaw += xoffset;
-    pitch = glm::clamp(pitch + yoffset, -89.f, 89.f); // constraint the vertical movement
-
-    glm::vec3 direction;
-    direction.x = std::cos(glm::radians(yaw)) * std::cos(glm::radians(pitch));
-    direction.y = std::sin(glm::radians(pitch));
-    direction.z = std::sin(glm::radians(yaw)) * std::cos(glm::radians(pitch));
-    camera_front = glm::normalize(direction);
+    camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
 void ProcessInput()
@@ -75,18 +59,14 @@ void ProcessInput()
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    float camera_speed = 10.f * delta_time;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera_pos += camera_speed * camera_front;
+        camera.ProcessKeyboard(FORWARD, delta_time);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera_pos -= camera_speed * camera_front;
+        camera.ProcessKeyboard(BACKWARD, delta_time);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera_pos -= glm::normalize(glm::cross(camera_front, camera_up)) * camera_speed;
+        camera.ProcessKeyboard(LEFT, delta_time);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera_pos += glm::normalize(glm::cross(camera_front, camera_up)) * camera_speed;
-    
-    // Fix movement at the ground level (xz plane)
-    //camera_pos.y = 0.0f;
+        camera.ProcessKeyboard(RIGHT, delta_time);
 }
 
 glm::mat4 MakeModelMatrix(glm::vec3& pos)
@@ -97,7 +77,7 @@ glm::mat4 MakeModelMatrix(glm::vec3& pos)
 }
 glm::mat4 MakeViewMatrix(void)
 {
-    glm::mat4 view = glm::lookAt(camera_pos, camera_pos + camera_front, camera_up);
+    glm::mat4 view = camera.GetViewMatrix();
     return view;
 }
 glm::mat4 MakeProjectionMatrix(void)
