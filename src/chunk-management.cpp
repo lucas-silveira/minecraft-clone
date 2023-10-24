@@ -4,22 +4,35 @@
 
 #include "chunk.h"
 
+std::vector<Chunk*> unload_list;
 std::vector<Chunk*> load_list;
 std::vector<Chunk*> setup_list;
-std::vector<Chunk*> visibility_list;
 std::vector<Chunk*> render_list;
 
-void UpdateLoadList()
+void InitUnloadList()
 {
     for (int x = -kTerrainSize/2; x < kTerrainSize/2; x++)
-        for (int y = -kTerrainSize/2; y < kTerrainSize/2; y++)
+        for (int y = 0; y < kTerrainSize; y++)
             for (int z = -kTerrainSize/2; z < kTerrainSize/2; z++)
             {
                 Chunk* chunk = MakeChunk();
                 chunk->position = glm::vec3(x * kChunkSize, y * kChunkSize, z * kChunkSize);
                 
-                load_list.push_back(chunk);
+                unload_list.push_back(chunk);
             }
+}
+
+void UpdateLoadList() // adicionar somente os chunks próximos
+{
+    for (Chunk* chunk : unload_list)
+    {
+        ApplyNoise(chunk);
+        if (chunk->is_empty) continue;
+        chunk->mesh = MakeChunkMesh(chunk);
+
+        load_list.push_back(chunk);
+    }
+    unload_list.clear();
 }
 
 void UpdateSetupList()
@@ -35,21 +48,17 @@ void UpdateSetupList()
     load_list.clear();
 }
 
-void UpdateVisibilityList()
+void UpdateRenderList()
 {
     for (Chunk* chunk : setup_list)
     {
         PrepareChunkToRender(chunk);
-        visibility_list.push_back(chunk);
+        render_list.push_back(chunk);
     }
     setup_list.clear();
 }
 
-void UpdateRenderList()
+void UpdateUnloadList() // remover chunks distantes e adicionar novos chunks em pontecial
 {
-    for (Chunk* chunk : visibility_list)
-    {
-        render_list.push_back(chunk);
-    }
-    visibility_list.clear();
+
 }

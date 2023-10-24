@@ -7,9 +7,10 @@
 
 extern std::vector<Chunk*> render_list;
 
+void InitUnloadList();
 void UpdateLoadList();
 void UpdateSetupList();
-void UpdateVisibilityList();
 void UpdateRenderList();
+void UpdateUnloadList();
 
 #endif

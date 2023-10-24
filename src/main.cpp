@@ -129,12 +129,9 @@ int main(void)
     glEnable(GL_DEPTH_TEST);
     Shader global_shader("shaders/shader.vert", "shaders/shader.frag");
 
-    UpdateLoadList();
-    UpdateSetupList();
-    UpdateVisibilityList();
-    UpdateRenderList();
-
     LoadTextures(global_shader);
+
+    InitUnloadList();
 
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -146,6 +143,11 @@ int main(void)
 
         ShowFps();
         ProcessInput();
+
+        UpdateLoadList();
+        UpdateSetupList();
+        UpdateRenderList();
+        UpdateUnloadList();
 
         glClearColor(0.529f, 0.808f, 0.922f, 1.f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
