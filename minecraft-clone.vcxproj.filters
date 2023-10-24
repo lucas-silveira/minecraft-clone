@@ -36,6 +36,9 @@
     <ClCompile Include="src\texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\chunk-management.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\shader.h">
@@ -53,6 +56,9 @@
     <ClInclude Include="src\common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\chunk-management.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.frag">
@@ -64,13 +70,25 @@
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="assets\dirt.jpg">
+    <Image Include="assets\dirt.png">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="assets\particles.png">
+    <Image Include="assets\grass.png">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="assets\terrain.png">
+    <Image Include="assets\leaf.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="assets\sand.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="assets\stone.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="assets\water.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="assets\wood.png">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

@@ -12,6 +12,7 @@
 #include "shader.h"
 #include "texture.h"
 #include "chunk.h"
+#include "chunk-management.h"
 
 // Settings
 const unsigned int kScreenWidth = 1280;
@@ -148,11 +149,10 @@ int main(void)
     glEnable(GL_DEPTH_TEST);
     Shader global_shader("shaders/shader.vert", "shaders/shader.frag");
 
-    Terrain terrain = MakeTerrain();
-    for (Chunk* chunk : terrain.chunks)
-    {
-        PrepareChunkToRender(chunk);
-    }
+    UpdateLoadList();
+    UpdateSetupList();
+    UpdateVisibilityList();
+    UpdateRenderList();
 
     LoadTextures(global_shader);
 
@@ -179,7 +179,7 @@ int main(void)
 
         BindTextures();
 
-        for (Chunk* chunk : terrain.chunks)
+        for (Chunk* chunk : render_list)
         {
             glm::mat4 model = MakeModelMatrix(chunk->position);
             global_shader.setMat4("model", model);
@@ -197,7 +197,7 @@ int main(void)
         //if (delta_time < msPerFrame) Sleep((msPerFrame - delta_time)*1000.f);
     }
 
-    for (Chunk* chunk : terrain.chunks) DeleteChunk(chunk);
+    for (Chunk* chunk : render_list) DeleteChunk(chunk);
     global_shader.remove();
 
     glfwTerminate();

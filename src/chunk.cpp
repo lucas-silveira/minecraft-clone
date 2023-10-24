@@ -9,11 +9,10 @@
 
 #include "block.h"
 
-const unsigned kChunkSize = 32;
-const unsigned kChunkArea = kChunkSize*kChunkSize;
-const unsigned kChunkVolume = kChunkSize*kChunkSize*kChunkSize;
-const unsigned kTerrainSize = 6;
-const unsigned kTerrainHeight = 2;
+const int kChunkSize = 32;
+const int kChunkArea = kChunkSize*kChunkSize;
+const int kChunkVolume = kChunkSize*kChunkSize*kChunkSize;
+const int kTerrainSize = 4;
 
 Chunk* MakeChunk(void)
 {
@@ -94,25 +93,6 @@ void RenderChunk(Chunk* chunk)
 {
     glBindVertexArray(chunk->mesh.ID);
     glDrawElements(GL_TRIANGLES, 36 * kChunkVolume, GL_UNSIGNED_INT, 0);
-}
-
-Terrain MakeTerrain()
-{
-    Terrain terrain;
-    for (int x = 0; x < kTerrainSize; x++)
-        for (int y = 0; y < kTerrainHeight; y++)
-            for (int z = 0; z < kTerrainSize; z++)
-            {
-                Chunk* chunk = MakeChunk();
-                chunk->position = glm::vec3(x * kChunkSize, y * kChunkSize, z * kChunkSize);
-                ApplyNoise(chunk);
-
-                if (chunk->is_empty) continue;
-
-                chunk->mesh = MakeChunkMesh(chunk);
-                terrain.chunks.push_back(chunk);
-            }
-    return terrain;
 }
 
 void PrepareChunkToRender(Chunk* chunk)

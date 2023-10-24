@@ -7,11 +7,10 @@
 
 #include "block.h"
 
-extern const unsigned kChunkSize;
-extern const unsigned kChunkArea;
-extern const unsigned kChunkVolume;
-extern const unsigned kTerrainSize;
-extern const unsigned kTerrainHeight;
+extern const int kChunkSize;
+extern const int kChunkArea;
+extern const int kChunkVolume;
+extern const int kTerrainSize;
 
 typedef struct
 {
@@ -36,7 +35,6 @@ Chunk* MakeChunk(void);
 void DeleteChunk(Chunk* chunk);
 ChunkMesh MakeChunkMesh(Chunk* chunk);
 void RenderChunk(Chunk* chunk);
-Terrain MakeTerrain();
 void PrepareChunkToRender(Chunk* chunk);
 void ApplyNoise(Chunk* chunk);
 float CalculateGlobalNoise(int bx, int bz, float seed, int octaves, float smoothness, float roughness);

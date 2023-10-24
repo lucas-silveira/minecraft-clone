@@ -133,12 +133,14 @@
   <ItemGroup>
     <ClCompile Include="lib\gl.c" />
     <ClCompile Include="src\block.cpp" />
+    <ClCompile Include="src\chunk-management.cpp" />
     <ClCompile Include="src\chunk.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\texture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\block.h" />
+    <ClInclude Include="src\chunk-management.h" />
     <ClInclude Include="src\chunk.h" />
     <ClInclude Include="src\common.h" />
     <ClInclude Include="src\shader.h" />
