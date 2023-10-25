@@ -7,26 +7,14 @@
 
 #include "chunk.h"
 
+std::vector<Chunk*> visibility_list;
+std::vector<Chunk*> temp_list;
 std::vector<Chunk*> unload_list;
 std::vector<Chunk*> load_list;
 std::vector<Chunk*> setup_list;
 std::vector<Chunk*> render_list;
-std::vector<Chunk*> visibility_list;
 
 glm::vec3 last_position;
-
-void InitUnloadList()
-{
-    for (int x = -kTerrainSize/2; x < kTerrainSize/2; x++)
-        for (int y = 0; y < kTerrainSize; y++)
-            for (int z = -kTerrainSize/2; z < kTerrainSize/2; z++)
-            {
-                Chunk* chunk = MakeChunk();
-                chunk->position = glm::vec3(x * kChunkSize, y * kChunkSize, z * kChunkSize);
-                
-                unload_list.push_back(chunk);
-            }
-}
 
 void UpdateChunks(glm::vec3 cam_pos)
 {
@@ -35,24 +23,37 @@ void UpdateChunks(glm::vec3 cam_pos)
         UpdateLoadList(cam_pos);
         UpdateSetupList();
         UpdateRenderList();
-        UpdateUnloadList(cam_pos);
+        UpdateVisibilityList(cam_pos);
     }
     last_position = cam_pos;
 }
 
+void InitUnloadList()
+{
+    for (int x = -kTerrainSize / 2; x < kTerrainSize / 2; x++)
+        for (int y = 0; y < kTerrainSize; y++)
+            for (int z = -kTerrainSize / 2; z < kTerrainSize / 2; z++)
+            {
+                Chunk* chunk = MakeChunk();
+                chunk->position = glm::vec3(x * kChunkSize, y * kChunkSize, z * kChunkSize);
+
+                visibility_list.push_back(chunk);
+            }
+}
+
 void UpdateLoadList(glm::vec3 cam_pos)
 {
-    for (Chunk* chunk : unload_list)
+    for (Chunk* chunk : visibility_list)
     {
         if (!IsNear(chunk, cam_pos))
         {
-            visibility_list.push_back(chunk);
+            temp_list.push_back(chunk);
             continue;
         }
 
         load_list.push_back(chunk);
     }
-    unload_list.clear();
+    visibility_list.clear();
 }
 
 void UpdateSetupList()
@@ -82,13 +83,13 @@ void UpdateRenderList()
     setup_list.clear();
 }
 
-void UpdateUnloadList(glm::vec3 pos) // remover chunks distantes e adicionar novos chunks em pontecial
+void UpdateVisibilityList(glm::vec3 pos) // remover chunks distantes e adicionar novos chunks em pontecial
 {
-    for (Chunk* chunk : visibility_list)
+    for (Chunk* chunk : temp_list)
     {
-        unload_list.push_back(chunk);
+        visibility_list.push_back(chunk);
     }
-    visibility_list.clear();
+    temp_list.clear();
 
     //unsigned max_slots = 20;
     //if (unload_list.size() >= max_slots) return;
