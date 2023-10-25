@@ -46,9 +46,9 @@ void InitVisibilityList()
     bottom_edge = 0, top_edge = kTerrainSize;
     right_edge = front_edge = kTerrainSize/2;
 
-    for (int x = left_edge; x < right_edge; x++)
-        for (int y = bottom_edge; y < top_edge; y++)
-            for (int z = back_edge; z < front_edge; z++)
+    for (int x = left_edge; x < right_edge+1; x++)
+        for (int y = bottom_edge; y < top_edge+1; y++)
+            for (int z = back_edge; z < front_edge+1; z++)
             {
                 glm::vec3 pos(x*kChunkSize, y*kChunkSize, z*kChunkSize);
                 Chunk* chunk = MakeChunk(pos);
@@ -154,6 +154,23 @@ void updateLeftEdgeVisibility(glm::vec3 pos)
         }
 }
 
+void updateRightEdgeVisibility(glm::vec3 pos)
+{
+    float dist_right_edge = glm::length(right_edge * kChunkSize - pos.x);
+    if (dist_right_edge >= kDistThreshold) return;
+
+    right_edge++;
+    left_edge++;
+
+    for (int y = bottom_edge; y < top_edge; y++)
+        for (int z = back_edge; z < front_edge; z++)
+        {
+            glm::vec3 pos(right_edge * kChunkSize, y * kChunkSize, z * kChunkSize);
+            Chunk* c = MakeChunk(pos);
+            visibility_list.push_back(c);
+        }
+}
+
 void UpdateVisibilityList(glm::vec3 pos) // remover chunks distantes e adicionar novos chunks em pontecial
 {
     for (Chunk* chunk : visibility_temp_list)
@@ -163,6 +180,7 @@ void UpdateVisibilityList(glm::vec3 pos) // remover chunks distantes e adicionar
     visibility_temp_list.clear();
 
     updateLeftEdgeVisibility(pos);
+    updateRightEdgeVisibility(pos);
 }
 
 void updateRightEdgeUnload()
@@ -170,6 +188,14 @@ void updateRightEdgeUnload()
     for (Chunk* chunk : render_list)
     {
         if (chunk->position.x > right_edge * kChunkSize) unload_list.push_back(chunk);
+    }
+}
+
+void updateLeftEdgeUnload()
+{
+    for (Chunk* chunk : render_list)
+    {
+        if (chunk->position.x < left_edge * kChunkSize) unload_list.push_back(chunk);
     }
 }
 
@@ -182,4 +208,5 @@ void UpdateUnloadList()
     unload_temp_list.clear();
 
     updateRightEdgeUnload();
+    updateLeftEdgeUnload();
 }
