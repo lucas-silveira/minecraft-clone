@@ -130,7 +130,7 @@ int main(void)
 
     LoadTextures(global_shader);
 
-    InitUnloadList();
+    InitVisibilityList();
 
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 

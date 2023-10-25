@@ -7,14 +7,45 @@
 
 #include "chunk.h"
 
+const int kDistThreshold = kChunkSize * 2;
+
 std::vector<Chunk*> visibility_list;
 std::vector<Chunk*> temp_list;
 std::vector<Chunk*> unload_list;
+std::vector<Chunk*> remove_list;
 std::vector<Chunk*> load_list;
 std::vector<Chunk*> setup_list;
 std::vector<Chunk*> render_list;
 
 glm::vec3 last_position;
+int left_edge, right_edge;
+int bottom_edge, top_edge;
+int back_edge, front_edge;
+
+bool isNear(Chunk* chunk, glm::vec3 pos)
+{
+    glm::vec3 chunk_center = ChunkCenter(chunk);
+    float dist = glm::length(chunk_center - pos);
+
+    return dist <= kDistThreshold;
+}
+
+void InitVisibilityList()
+{
+    left_edge = back_edge = -kTerrainSize/2;
+    bottom_edge = 0, top_edge = kTerrainSize;
+    right_edge = front_edge = kTerrainSize/2;
+
+    for (int x = left_edge; x < right_edge; x++)
+        for (int y = 0; y < kTerrainSize; y++)
+            for (int z = back_edge; z < front_edge; z++)
+            {
+                glm::vec3 pos(x*kChunkSize, y*kChunkSize, z*kChunkSize);
+                Chunk* chunk = MakeChunk(pos);
+
+                visibility_list.push_back(chunk);
+            }
+}
 
 void UpdateChunks(glm::vec3 cam_pos)
 {
@@ -28,24 +59,11 @@ void UpdateChunks(glm::vec3 cam_pos)
     last_position = cam_pos;
 }
 
-void InitUnloadList()
-{
-    for (int x = -kTerrainSize / 2; x < kTerrainSize / 2; x++)
-        for (int y = 0; y < kTerrainSize; y++)
-            for (int z = -kTerrainSize / 2; z < kTerrainSize / 2; z++)
-            {
-                Chunk* chunk = MakeChunk();
-                chunk->position = glm::vec3(x * kChunkSize, y * kChunkSize, z * kChunkSize);
-
-                visibility_list.push_back(chunk);
-            }
-}
-
 void UpdateLoadList(glm::vec3 cam_pos)
 {
     for (Chunk* chunk : visibility_list)
     {
-        if (!IsNear(chunk, cam_pos))
+        if (!isNear(chunk, cam_pos))
         {
             temp_list.push_back(chunk);
             continue;
@@ -81,6 +99,33 @@ void UpdateRenderList()
         render_list.push_back(chunk);
     }
     setup_list.clear();
+
+    for (Chunk* chunk : unload_list)
+    {
+        auto chunk_index = std::find(render_list.begin(), render_list.end(), chunk);
+        bool is_rendered = chunk_index != render_list.end();
+
+        if (is_rendered) render_list.erase(chunk_index);
+        DeleteChunk(chunk);
+    }
+    unload_list.clear();
+}
+
+void updateLeftEdgeVisibility(glm::vec3 pos)
+{
+    float dist_left_edge = glm::length(left_edge - pos.x);
+    if (dist_left_edge > kDistThreshold) return;
+
+    left_edge--;
+    //right_edge--;
+
+    for (int y = bottom_edge; y < top_edge; y++)
+        for (int z = back_edge; z < front_edge; z++)
+        {
+            glm::vec3 pos(left_edge * kChunkSize, y * kChunkSize, z * kChunkSize);
+            Chunk* c = MakeChunk(pos);
+            visibility_list.push_back(c);
+        }
 }
 
 void UpdateVisibilityList(glm::vec3 pos) // remover chunks distantes e adicionar novos chunks em pontecial
@@ -91,47 +136,10 @@ void UpdateVisibilityList(glm::vec3 pos) // remover chunks distantes e adicionar
     }
     temp_list.clear();
 
-    //unsigned max_slots = 20;
-    //if (unload_list.size() >= max_slots) return;
-
-    //float slots = max_slots - unload_list.size();
-    //std::vector<Chunk*> cache;
-
-    //for (int i = 0; i < slots; i++)
-    //{
-    //    Chunk* near_chunk = NULL;
-    //    float less_dist = INFINITY;
-    //    for (Chunk* chunk : render_list)
-    //    {
-    //        glm::vec3 chunk_center = ChunkCenter(chunk);
-
-    //        float dist = glm::length(chunk_center - pos);
-    //        bool is_cached = std::find(cache.begin(), cache.end(), chunk) != cache.end();
-
-    //        if (dist < less_dist && !is_cached)
-    //        {
-    //            near_chunk = chunk;
-    //            less_dist = dist;
-    //        }
-    //    }
-
-    //    if (!near_chunk) continue;
-
-    //    Chunk* chunk = MakeChunk();
-    //    chunk->position = glm::vec3(
-    //        near_chunk->position.x + kChunkSize,
-    //        near_chunk->position.y + kChunkSize,
-    //        near_chunk->position.z + kChunkSize
-    //    );
-    //    cache.push_back(chunk);
-    //}
-    //unload_list.insert(unload_list.begin(), cache.begin(), cache.end());
+    updateLeftEdgeVisibility(pos);
 }
 
-bool IsNear(Chunk* chunk, glm::vec3 pos)
+void UpdateUnloadList()
 {
-    glm::vec3 chunk_center = ChunkCenter(chunk);
-    float dist = glm::length(chunk_center-pos);
 
-    return dist <= kChunkSize*2;
 }

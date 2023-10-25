@@ -14,10 +14,11 @@ const int kChunkArea = kChunkSize*kChunkSize;
 const int kChunkVolume = kChunkSize*kChunkSize*kChunkSize;
 const int kTerrainSize = 4;
 
-Chunk* MakeChunk(void)
+Chunk* MakeChunk(glm::vec3 pos)
 {
     Chunk* chunk = new Chunk();
     chunk->is_empty = true;
+    chunk->position = pos;
     chunk->blocks = new Block**[kChunkSize];
     for (int x = 0; x < kChunkSize; x++)
     {

@@ -31,7 +31,7 @@ typedef struct {
     std::vector<Chunk*> chunks;
 } Terrain;
 
-Chunk* MakeChunk(void);
+Chunk* MakeChunk(glm::vec3 pos);
 void DeleteChunk(Chunk* chunk);
 glm::vec3 ChunkCenter(Chunk* chunk);
 ChunkMesh MakeChunkMesh(Chunk* chunk);
