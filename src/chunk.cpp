@@ -12,7 +12,6 @@
 const int kChunkSize = 32;
 const int kChunkArea = kChunkSize*kChunkSize;
 const int kChunkVolume = kChunkSize*kChunkSize*kChunkSize;
-const int kTerrainSize = 4;
 
 Chunk* MakeChunk(glm::vec3 pos)
 {
