@@ -33,6 +33,7 @@ typedef struct {
 
 Chunk* MakeChunk(void);
 void DeleteChunk(Chunk* chunk);
+glm::vec3 ChunkCenter(Chunk* chunk);
 ChunkMesh MakeChunkMesh(Chunk* chunk);
 void RenderChunk(Chunk* chunk);
 void PrepareChunkToRender(Chunk* chunk);

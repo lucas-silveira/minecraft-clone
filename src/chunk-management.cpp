@@ -1,6 +1,9 @@
 #include "chunk-management.h"
 
+#include <glm/glm.hpp>
+
 #include <vector>
+#include <math.h>
 
 #include "chunk.h"
 
@@ -8,6 +11,9 @@ std::vector<Chunk*> unload_list;
 std::vector<Chunk*> load_list;
 std::vector<Chunk*> setup_list;
 std::vector<Chunk*> render_list;
+std::vector<Chunk*> visibility_list;
+
+glm::vec3 last_position;
 
 void InitUnloadList()
 {
@@ -22,13 +28,27 @@ void InitUnloadList()
             }
 }
 
-void UpdateLoadList() // adicionar somente os chunks próximos
+void UpdateChunks(glm::vec3 cam_pos)
+{
+    if (last_position != cam_pos)
+    {
+        UpdateLoadList(cam_pos);
+        UpdateSetupList();
+        UpdateRenderList();
+        UpdateUnloadList(cam_pos);
+    }
+    last_position = cam_pos;
+}
+
+void UpdateLoadList(glm::vec3 cam_pos)
 {
     for (Chunk* chunk : unload_list)
     {
-        ApplyNoise(chunk);
-        if (chunk->is_empty) continue;
-        chunk->mesh = MakeChunkMesh(chunk);
+        if (!IsNear(chunk, cam_pos))
+        {
+            visibility_list.push_back(chunk);
+            continue;
+        }
 
         load_list.push_back(chunk);
     }
@@ -40,7 +60,11 @@ void UpdateSetupList()
     for (Chunk* chunk : load_list)
     {
         ApplyNoise(chunk);
-        if (chunk->is_empty) continue;
+        if (chunk->is_empty)
+        {
+            DeleteChunk(chunk);
+            continue;
+        };
         chunk->mesh = MakeChunkMesh(chunk);
 
         setup_list.push_back(chunk);
@@ -58,7 +82,55 @@ void UpdateRenderList()
     setup_list.clear();
 }
 
-void UpdateUnloadList() // remover chunks distantes e adicionar novos chunks em pontecial
+void UpdateUnloadList(glm::vec3 pos) // remover chunks distantes e adicionar novos chunks em pontecial
 {
+    for (Chunk* chunk : visibility_list)
+    {
+        unload_list.push_back(chunk);
+    }
+    visibility_list.clear();
 
+    //unsigned max_slots = 20;
+    //if (unload_list.size() >= max_slots) return;
+
+    //float slots = max_slots - unload_list.size();
+    //std::vector<Chunk*> cache;
+
+    //for (int i = 0; i < slots; i++)
+    //{
+    //    Chunk* near_chunk = NULL;
+    //    float less_dist = INFINITY;
+    //    for (Chunk* chunk : render_list)
+    //    {
+    //        glm::vec3 chunk_center = ChunkCenter(chunk);
+
+    //        float dist = glm::length(chunk_center - pos);
+    //        bool is_cached = std::find(cache.begin(), cache.end(), chunk) != cache.end();
+
+    //        if (dist < less_dist && !is_cached)
+    //        {
+    //            near_chunk = chunk;
+    //            less_dist = dist;
+    //        }
+    //    }
+
+    //    if (!near_chunk) continue;
+
+    //    Chunk* chunk = MakeChunk();
+    //    chunk->position = glm::vec3(
+    //        near_chunk->position.x + kChunkSize,
+    //        near_chunk->position.y + kChunkSize,
+    //        near_chunk->position.z + kChunkSize
+    //    );
+    //    cache.push_back(chunk);
+    //}
+    //unload_list.insert(unload_list.begin(), cache.begin(), cache.end());
+}
+
+bool IsNear(Chunk* chunk, glm::vec3 pos)
+{
+    glm::vec3 chunk_center = ChunkCenter(chunk);
+    float dist = glm::length(chunk_center-pos);
+
+    return dist <= kChunkSize*2;
 }

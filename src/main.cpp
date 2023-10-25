@@ -3,7 +3,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <glm/gtc/noise.hpp>
 #include <windows.h>
 
 #include <iostream>
@@ -143,11 +142,9 @@ int main(void)
 
         ShowFps();
         ProcessInput();
+        
 
-        UpdateLoadList();
-        UpdateSetupList();
-        UpdateRenderList();
-        UpdateUnloadList();
+        UpdateChunks(camera.Position);
 
         glClearColor(0.529f, 0.808f, 0.922f, 1.f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

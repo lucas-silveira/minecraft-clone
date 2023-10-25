@@ -48,6 +48,15 @@ void DeleteChunk(Chunk* chunk)
     delete chunk;
 }
 
+glm::vec3 ChunkCenter(Chunk* chunk)
+{
+    return glm::vec3(
+        chunk->position.x + kChunkSize / 2,
+        chunk->position.y + kChunkSize / 2,
+        chunk->position.z + kChunkSize / 2
+    );
+}
+
 ChunkMesh MakeChunkMesh(Chunk* chunk)
 {
     ChunkMesh chunk_mesh;
