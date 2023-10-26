@@ -138,8 +138,11 @@ void UpdateRenderList()
     {
         PrepareChunkToRender(chunk);
         render_list.push_back(chunk);
+
+        // Thread safe remove
+        auto chunk_index = std::find(setup_list.begin(), setup_list.end(), chunk);
+        if (chunk_index != setup_list.end()) setup_list.erase(chunk_index);
     }
-    setup_list.clear();
 
     for (Chunk* chunk : remove_list)
     {
@@ -148,8 +151,11 @@ void UpdateRenderList()
 
         if (is_rendered) render_list.erase(chunk_index);
         DeleteChunk(chunk);
+
+        // Thread safe remove
+        chunk_index = std::find(remove_list.begin(), remove_list.end(), chunk);
+        if (chunk_index != remove_list.end()) remove_list.erase(chunk_index);
     }
-    remove_list.clear();
 }
 
 void updateLeftEdgeVisibility(glm::vec3 pos)
