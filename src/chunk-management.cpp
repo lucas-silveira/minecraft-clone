@@ -2,10 +2,16 @@
 
 #include <glm/glm.hpp>
 
-#include <vector>
 #include <math.h>
 
+#include <vector>
+#include <future>
+#include <thread>
+#include <chrono>
+
 #include "chunk.h"
+
+using namespace std::chrono_literals;
 
 const int kTerrainSize = 10;
 const int kHThreshold = kChunkSize*4;
@@ -29,6 +35,8 @@ int back_edge, front_edge;
 bool horizontal_unload_update = false;
 bool vertical_unload_update = false;
 bool depth_unload_update = false;
+
+std::future<void> cm_thread;
 
 bool isNear(Chunk* chunk, glm::vec3 pos)
 {
@@ -64,16 +72,17 @@ void InitVisibilityList()
 
 void UpdateChunks(glm::vec3 cam_pos)
 {
-    if (last_position == cam_pos) return;
+    auto thread_status = cm_thread.valid() ? cm_thread.wait_for(0ms) : std::future_status::ready;
+    if (thread_status == std::future_status::ready)
+        cm_thread = std::async(std::launch::async, [&] {
+            UpdateRemoveList(cam_pos);
+            UpdateLoadList(cam_pos);
+            UpdateSetupList();
+        });
 
-    UpdateRemoveList(cam_pos);
-    UpdateLoadList(cam_pos);
-    UpdateSetupList();
     UpdateRenderList();
     UpdateVisibilityList(cam_pos);
     UpdateUnloadList();
-
-    last_position = cam_pos;
 }
 
 void UpdateRemoveList(glm::vec3 cam_pos)

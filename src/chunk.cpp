@@ -42,8 +42,11 @@ void DeleteChunk(Chunk* chunk)
     }
     delete[] chunk->blocks;
 
-    glDeleteVertexArrays(1, &(chunk->mesh.ID));
-    glDeleteBuffers(2, chunk->mesh.buffers);
+    if (!chunk->is_empty)
+    {
+        glDeleteVertexArrays(1, &(chunk->mesh.ID));
+        glDeleteBuffers(2, chunk->mesh.buffers);
+    }
 
     delete chunk;
 }
