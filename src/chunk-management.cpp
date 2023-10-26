@@ -8,7 +8,9 @@
 #include "chunk.h"
 
 const int kTerrainSize = 10;
-const int kDistThreshold = kChunkSize*4;
+const int kHThreshold = kChunkSize*4;
+const int kVThreshold = kChunkSize;
+const int kDThreshold = kChunkSize*4;
 
 std::vector<Chunk*> visibility_list;
 std::vector<Chunk*> visibility_temp_list;
@@ -24,12 +26,16 @@ int left_edge, right_edge;
 int bottom_edge, top_edge;
 int back_edge, front_edge;
 
+bool horizontal_unload_update = false;
+bool vertical_unload_update = false;
+bool depth_unload_update = false;
+
 bool isNear(Chunk* chunk, glm::vec3 pos)
 {
     glm::vec3 chunk_center = ChunkCenter(chunk);
     float dist = glm::length(chunk_center - pos);
 
-    return dist <= kDistThreshold;
+    return dist <= kHThreshold;
 }
 
 bool isFar(Chunk* chunk, glm::vec3 pos)
@@ -37,20 +43,19 @@ bool isFar(Chunk* chunk, glm::vec3 pos)
     glm::vec3 chunk_center = ChunkCenter(chunk);
     float dist = glm::length(chunk_center - pos);
 
-    return dist >= kDistThreshold;
+    return dist >= kHThreshold;
 }
 
 void InitVisibilityList()
 {
-    left_edge = back_edge = -kTerrainSize/2;
-    bottom_edge = 0, top_edge = kTerrainSize;
-    right_edge = front_edge = kTerrainSize/2;
+    left_edge = bottom_edge = back_edge = -kTerrainSize / 2;
+    right_edge = top_edge = front_edge = kTerrainSize / 2;
 
     for (int x = left_edge; x <= right_edge; x++)
         for (int y = bottom_edge; y <= top_edge; y++)
             for (int z = back_edge; z <= front_edge; z++)
             {
-                glm::vec3 pos(x*kChunkSize, y*kChunkSize, z*kChunkSize);
+                glm::vec3 pos(x * kChunkSize, y * kChunkSize, z * kChunkSize);
                 Chunk* chunk = MakeChunk(pos);
 
                 visibility_list.push_back(chunk);
@@ -140,10 +145,11 @@ void UpdateRenderList()
 void updateLeftEdgeVisibility(glm::vec3 pos)
 {
     float dist_left_edge = glm::length(left_edge * kChunkSize - pos.x);
-    if (dist_left_edge >= kDistThreshold) return;
+    if (dist_left_edge >= kHThreshold) return;
 
     left_edge--;
     right_edge--;
+    horizontal_unload_update = true;
 
     for (int y = bottom_edge; y < top_edge; y++)
         for (int z = back_edge; z < front_edge; z++)
@@ -157,15 +163,52 @@ void updateLeftEdgeVisibility(glm::vec3 pos)
 void updateRightEdgeVisibility(glm::vec3 pos)
 {
     float dist_right_edge = glm::length(right_edge * kChunkSize - pos.x);
-    if (dist_right_edge >= kDistThreshold) return;
+    if (dist_right_edge >= kHThreshold) return;
 
     right_edge++;
     left_edge++;
+    horizontal_unload_update = true;
 
     for (int y = bottom_edge; y < top_edge; y++)
         for (int z = back_edge; z < front_edge; z++)
         {
             glm::vec3 pos(right_edge * kChunkSize, y * kChunkSize, z * kChunkSize);
+            Chunk* c = MakeChunk(pos);
+            visibility_list.push_back(c);
+        }
+}
+
+void updateBottomEdgeVisibility(glm::vec3 pos)
+{
+    float dist_bottom_edge = glm::length(bottom_edge * kChunkSize - pos.y);
+    if (dist_bottom_edge >= kVThreshold) return;
+
+    bottom_edge--;
+    top_edge--;
+    vertical_unload_update = true;
+
+    for (int x = left_edge; x < right_edge; x++)
+        for (int z = back_edge; z < front_edge; z++)
+        {
+            glm::vec3 pos(x * kChunkSize, bottom_edge * kChunkSize, z * kChunkSize);
+            Chunk* c = MakeChunk(pos);
+            visibility_list.push_back(c);
+        }
+}
+
+void updateTopEdgeVisibility(glm::vec3 pos)
+{
+    float dist_top_edge = glm::length(top_edge * kChunkSize - pos.y);
+    if (dist_top_edge >= kVThreshold) return;
+
+    top_edge++;
+    bottom_edge++;
+    vertical_unload_update = true;
+
+    for (int x = left_edge; x < right_edge; x++)
+        for (int z = back_edge; z < front_edge; z++)
+        {
+            glm::vec3 pos(x * kChunkSize, top_edge * kChunkSize, z * kChunkSize);
             Chunk* c = MakeChunk(pos);
             visibility_list.push_back(c);
         }
@@ -181,6 +224,8 @@ void UpdateVisibilityList(glm::vec3 pos) // remover chunks distantes e adicionar
 
     updateLeftEdgeVisibility(pos);
     updateRightEdgeVisibility(pos);
+    updateBottomEdgeVisibility(pos);
+    updateTopEdgeVisibility(pos);
 }
 
 void updateRightEdgeUnload()
@@ -199,6 +244,22 @@ void updateLeftEdgeUnload()
     }
 }
 
+void updateTopEdgeUnload()
+{
+    for (Chunk* chunk : render_list)
+    {
+        if (chunk->position.y > top_edge * kChunkSize) unload_list.push_back(chunk);
+    }
+}
+
+void updateBottomEdgeUnload()
+{
+    for (Chunk* chunk : render_list)
+    {
+        if (chunk->position.y < bottom_edge * kChunkSize) unload_list.push_back(chunk);
+    }
+}
+
 void UpdateUnloadList()
 {
     for (Chunk* chunk : unload_temp_list)
@@ -207,6 +268,19 @@ void UpdateUnloadList()
     }
     unload_temp_list.clear();
 
-    updateRightEdgeUnload();
-    updateLeftEdgeUnload();
+    if (horizontal_unload_update)
+    {
+        updateRightEdgeUnload();
+        updateLeftEdgeUnload();
+        horizontal_unload_update = false;
+    }
+
+    if (vertical_unload_update)
+    {
+
+        updateTopEdgeUnload();
+        updateBottomEdgeUnload();
+        vertical_unload_update = false;
+    }
+
 }
