@@ -143,7 +143,6 @@ int main(void)
         ShowFps();
         ProcessInput();
         
-
         UpdateChunks(camera.Position);
 
         glClearColor(0.529f, 0.808f, 0.922f, 1.f);
