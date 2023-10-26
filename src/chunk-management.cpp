@@ -7,8 +7,8 @@
 
 #include "chunk.h"
 
-const int kTerrainSize = 6;
-const int kDistThreshold = kChunkSize*2;
+const int kTerrainSize = 10;
+const int kDistThreshold = kChunkSize*4;
 
 std::vector<Chunk*> visibility_list;
 std::vector<Chunk*> visibility_temp_list;
@@ -46,9 +46,9 @@ void InitVisibilityList()
     bottom_edge = 0, top_edge = kTerrainSize;
     right_edge = front_edge = kTerrainSize/2;
 
-    for (int x = left_edge; x < right_edge+1; x++)
-        for (int y = bottom_edge; y < top_edge+1; y++)
-            for (int z = back_edge; z < front_edge+1; z++)
+    for (int x = left_edge; x <= right_edge; x++)
+        for (int y = bottom_edge; y <= top_edge; y++)
+            for (int z = back_edge; z <= front_edge; z++)
             {
                 glm::vec3 pos(x*kChunkSize, y*kChunkSize, z*kChunkSize);
                 Chunk* chunk = MakeChunk(pos);
