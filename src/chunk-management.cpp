@@ -64,15 +64,15 @@ void InitVisibilityList()
 
 void UpdateChunks(glm::vec3 cam_pos)
 {
-    if (last_position != cam_pos)
-    {
-        UpdateRemoveList(cam_pos);
-        UpdateLoadList(cam_pos);
-        UpdateSetupList();
-        UpdateRenderList();
-        UpdateVisibilityList(cam_pos);
-        UpdateUnloadList();
-    }
+    if (last_position == cam_pos) return;
+
+    UpdateRemoveList(cam_pos);
+    UpdateLoadList(cam_pos);
+    UpdateSetupList();
+    UpdateRenderList();
+    UpdateVisibilityList(cam_pos);
+    UpdateUnloadList();
+
     last_position = cam_pos;
 }
 
