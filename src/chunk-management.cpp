@@ -214,6 +214,42 @@ void updateTopEdgeVisibility(glm::vec3 pos)
         }
 }
 
+void updateBackEdgeVisibility(glm::vec3 pos)
+{
+    float dist_back_edge = glm::length(back_edge * kChunkSize - pos.z);
+    if (dist_back_edge >= kDThreshold) return;
+
+    back_edge--;
+    front_edge--;
+    depth_unload_update = true;
+
+    for (int x = left_edge; x < right_edge; x++)
+        for (int y = bottom_edge; y < top_edge; y++)
+        {
+            glm::vec3 pos(x * kChunkSize, y * kChunkSize, back_edge * kChunkSize);
+            Chunk* c = MakeChunk(pos);
+            visibility_list.push_back(c);
+        }
+}
+
+void updateFrontEdgeVisibility(glm::vec3 pos)
+{
+    float dist_front_edge = glm::length(front_edge * kChunkSize - pos.z);
+    if (dist_front_edge >= kDThreshold) return;
+
+    front_edge++;
+    back_edge++;
+    depth_unload_update = true;
+
+    for (int x = left_edge; x < right_edge; x++)
+        for (int y = bottom_edge; y < top_edge; y++)
+        {
+            glm::vec3 pos(x * kChunkSize, y * kChunkSize, front_edge * kChunkSize);
+            Chunk* c = MakeChunk(pos);
+            visibility_list.push_back(c);
+        }
+}
+
 void UpdateVisibilityList(glm::vec3 pos) // remover chunks distantes e adicionar novos chunks em pontecial
 {
     for (Chunk* chunk : visibility_temp_list)
@@ -226,6 +262,8 @@ void UpdateVisibilityList(glm::vec3 pos) // remover chunks distantes e adicionar
     updateRightEdgeVisibility(pos);
     updateBottomEdgeVisibility(pos);
     updateTopEdgeVisibility(pos);
+    updateBackEdgeVisibility(pos);
+    updateFrontEdgeVisibility(pos);
 }
 
 void updateRightEdgeUnload()
@@ -260,6 +298,22 @@ void updateBottomEdgeUnload()
     }
 }
 
+void updateFrontEdgeUnload()
+{
+    for (Chunk* chunk : render_list)
+    {
+        if (chunk->position.z > front_edge * kChunkSize) unload_list.push_back(chunk);
+    }
+}
+
+void updateBackEdgeUnload()
+{
+    for (Chunk* chunk : render_list)
+    {
+        if (chunk->position.z < back_edge * kChunkSize) unload_list.push_back(chunk);
+    }
+}
+
 void UpdateUnloadList()
 {
     for (Chunk* chunk : unload_temp_list)
@@ -283,4 +337,10 @@ void UpdateUnloadList()
         vertical_unload_update = false;
     }
 
+    if (depth_unload_update)
+    {
+        updateFrontEdgeUnload();
+        updateBackEdgeUnload();
+        depth_unload_update = false;
+    }
 }
