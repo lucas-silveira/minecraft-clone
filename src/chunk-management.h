@@ -9,7 +9,7 @@
 
 extern std::vector<Chunk*> render_list;
 
-void InitVisibilityList();
+void InitVisibilityList(glm::vec3 cam_pos);
 void UpdateChunks(glm::vec3 cam_pos);
 void UpdateRemoveList(glm::vec3 cam_pos);
 void UpdateLoadList(glm::vec3 cam_pos);

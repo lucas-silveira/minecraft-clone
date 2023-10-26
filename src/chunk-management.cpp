@@ -27,7 +27,6 @@ std::vector<Chunk*> load_list;
 std::vector<Chunk*> setup_list;
 std::vector<Chunk*> render_list;
 
-glm::vec3 last_position;
 int left_edge, right_edge;
 int bottom_edge, top_edge;
 int back_edge, front_edge;
@@ -37,6 +36,7 @@ bool vertical_unload_update = false;
 bool depth_unload_update = false;
 
 std::future<void> cm_thread;
+bool exec_thread = true;
 
 bool isNear(Chunk* chunk, glm::vec3 pos)
 {
@@ -54,7 +54,7 @@ bool isFar(Chunk* chunk, glm::vec3 pos)
     return dist >= kHThreshold;
 }
 
-void InitVisibilityList()
+void InitVisibilityList(glm::vec3 cam_pos)
 {
     left_edge = back_edge = -kTerrainSize / 2;
     bottom_edge = 0; top_edge = 4;
@@ -69,21 +69,32 @@ void InitVisibilityList()
 
                 visibility_list.push_back(chunk);
             }
+    UpdateLoadList(cam_pos);
+    UpdateSetupList();
+    UpdateRenderList();
 }
 
 void UpdateChunks(glm::vec3 cam_pos)
 {
-    auto thread_status = cm_thread.valid() ? cm_thread.wait_for(0ms) : std::future_status::ready;
-    if (thread_status == std::future_status::ready)
+    
+    if (exec_thread)
+    {
         cm_thread = std::async(std::launch::async, [&] {
             UpdateRemoveList(cam_pos);
             UpdateLoadList(cam_pos);
             UpdateSetupList();
         });
+        exec_thread = false;
+    }
+
+    auto thread_status = cm_thread.wait_for(0ms);
+    if (thread_status != std::future_status::ready) return;
 
     UpdateRenderList();
     UpdateVisibilityList(cam_pos);
     UpdateUnloadList();
+
+    exec_thread = true;
 }
 
 void UpdateRemoveList(glm::vec3 cam_pos)
