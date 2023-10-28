@@ -244,7 +244,11 @@ void UpdateVisibilityList(glm::vec3 pos)
 {
     for (Chunk* chunk : visibility_temp_list)
     {
-        if (isFar(chunk, pos)) continue;
+        if (isFar(chunk, pos))
+        {
+            DeleteChunk(chunk);
+            continue;
+        }
         visibility_list.push_back(chunk);
     }
     visibility_temp_list.clear();
@@ -263,7 +267,11 @@ void updateRightEdgeUnload()
         std::remove_if(
             render_list.begin(),
             render_list.end(),
-            [](Chunk* chunk) { return chunk->position.x > right_edge * kChunkSize; }
+            [](Chunk* chunk) {
+                bool is_out_range = chunk->position.x > right_edge * kChunkSize;
+                if (is_out_range) DeleteChunk(chunk);
+                return is_out_range;
+            }
         ),
         render_list.end()
     );
@@ -275,7 +283,11 @@ void updateLeftEdgeUnload()
         std::remove_if(
             render_list.begin(),
             render_list.end(),
-            [](Chunk* chunk) { return chunk->position.x < left_edge * kChunkSize; }
+            [](Chunk* chunk) {
+                bool is_out_range = chunk->position.x < left_edge * kChunkSize;
+                if (is_out_range) DeleteChunk(chunk);
+                return is_out_range;
+            }
         ),
         render_list.end()
     );
@@ -287,7 +299,11 @@ void updateTopEdgeUnload()
         std::remove_if(
             render_list.begin(),
             render_list.end(),
-            [](Chunk* chunk) { return chunk->position.y > top_edge * kChunkSize; }
+            [](Chunk* chunk) {
+                bool is_out_range = chunk->position.y > top_edge * kChunkSize;
+                if (is_out_range) DeleteChunk(chunk);
+                return is_out_range;
+            }
         ),
         render_list.end()
     );
@@ -299,7 +315,11 @@ void updateBottomEdgeUnload()
         std::remove_if(
             render_list.begin(),
             render_list.end(),
-            [](Chunk* chunk) { return chunk->position.y < bottom_edge * kChunkSize; }
+            [](Chunk* chunk) {
+                bool is_out_range = chunk->position.y < bottom_edge * kChunkSize;
+                if (is_out_range) DeleteChunk(chunk);
+                return is_out_range;
+            }
         ),
         render_list.end()
     );
@@ -311,7 +331,11 @@ void updateFrontEdgeUnload()
         std::remove_if(
             render_list.begin(),
             render_list.end(),
-            [](Chunk* chunk) { return chunk->position.z > front_edge * kChunkSize; }
+            [](Chunk* chunk) {
+                bool is_out_range = chunk->position.z > front_edge * kChunkSize;
+                if (is_out_range) DeleteChunk(chunk);
+                return is_out_range;
+            }
         ),
         render_list.end()
     );
@@ -323,7 +347,11 @@ void updateBackEdgeUnload()
         std::remove_if(
             render_list.begin(),
             render_list.end(),
-            [](Chunk* chunk) { return chunk->position.z < back_edge * kChunkSize; }
+            [](Chunk* chunk) {
+                bool is_out_range = chunk->position.z < back_edge * kChunkSize;
+                if (is_out_range) DeleteChunk(chunk);
+                return is_out_range;
+            }
         ),
         render_list.end()
     );
