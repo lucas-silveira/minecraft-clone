@@ -42,6 +42,14 @@ bool isNear(Chunk* chunk, glm::vec3 pos)
     return dist <= kThreshold;
 }
 
+bool isFar(Chunk* chunk, glm::vec3 pos)
+{
+    glm::vec3 chunk_center = ChunkCenter(chunk);
+    float dist = glm::length(chunk_center - pos);
+
+    return dist >= kTerrainSize * kChunkSize;
+}
+
 void InitVisibilityList(glm::vec3 cam_pos)
 {
     left_edge = bottom_edge = back_edge = -kTerrainSize / 2;
@@ -236,6 +244,7 @@ void UpdateVisibilityList(glm::vec3 pos)
 {
     for (Chunk* chunk : visibility_temp_list)
     {
+        if (isFar(chunk, pos)) continue;
         visibility_list.push_back(chunk);
     }
     visibility_temp_list.clear();
