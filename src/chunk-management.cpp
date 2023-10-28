@@ -122,16 +122,6 @@ void UpdateRenderList()
         render_list.push_back(chunk);
     }
     setup_list.clear();
-
-    for (Chunk* chunk : unload_list)
-    {
-        auto chunk_index = std::find(render_list.begin(), render_list.end(), chunk);
-        bool is_rendered = chunk_index != render_list.end();
-
-        if (is_rendered) render_list.erase(chunk_index);
-        DeleteChunk(chunk);
-    }
-    unload_list.clear();
 }
 
 void updateLeftEdgeVisibility(glm::vec3 pos)
@@ -260,50 +250,74 @@ void UpdateVisibilityList(glm::vec3 pos)
 
 void updateRightEdgeUnload()
 {
-    for (Chunk* chunk : render_list)
-    {
-        if (chunk->position.x > right_edge * kChunkSize) unload_list.push_back(chunk);
-    }
+    render_list.erase(
+        std::remove_if(
+            render_list.begin(),
+            render_list.end(),
+            [](Chunk* chunk) { return chunk->position.x > right_edge * kChunkSize; }
+        ),
+        render_list.end()
+    );
 }
 
 void updateLeftEdgeUnload()
 {
-    for (Chunk* chunk : render_list)
-    {
-        if (chunk->position.x < left_edge * kChunkSize) unload_list.push_back(chunk);
-    }
+    render_list.erase(
+        std::remove_if(
+            render_list.begin(),
+            render_list.end(),
+            [](Chunk* chunk) { return chunk->position.x < left_edge * kChunkSize; }
+        ),
+        render_list.end()
+    );
 }
 
 void updateTopEdgeUnload()
 {
-    for (Chunk* chunk : render_list)
-    {
-        if (chunk->position.y > top_edge * kChunkSize) unload_list.push_back(chunk);
-    }
+    render_list.erase(
+        std::remove_if(
+            render_list.begin(),
+            render_list.end(),
+            [](Chunk* chunk) { return chunk->position.y > top_edge * kChunkSize; }
+        ),
+        render_list.end()
+    );
 }
 
 void updateBottomEdgeUnload()
 {
-    for (Chunk* chunk : render_list)
-    {
-        if (chunk->position.y < bottom_edge * kChunkSize) unload_list.push_back(chunk);
-    }
+    render_list.erase(
+        std::remove_if(
+            render_list.begin(),
+            render_list.end(),
+            [](Chunk* chunk) { return chunk->position.y < bottom_edge * kChunkSize; }
+        ),
+        render_list.end()
+    );
 }
 
 void updateFrontEdgeUnload()
 {
-    for (Chunk* chunk : render_list)
-    {
-        if (chunk->position.z > front_edge * kChunkSize) unload_list.push_back(chunk);
-    }
+    render_list.erase(
+        std::remove_if(
+            render_list.begin(),
+            render_list.end(),
+            [](Chunk* chunk) { return chunk->position.z > front_edge * kChunkSize; }
+        ),
+        render_list.end()
+    );
 }
 
 void updateBackEdgeUnload()
 {
-    for (Chunk* chunk : render_list)
-    {
-        if (chunk->position.z < back_edge * kChunkSize) unload_list.push_back(chunk);
-    }
+    render_list.erase(
+        std::remove_if(
+            render_list.begin(),
+            render_list.end(),
+            [](Chunk* chunk) { return chunk->position.z < back_edge * kChunkSize; }
+        ),
+        render_list.end()
+    );
 }
 
 void UpdateUnloadList()
