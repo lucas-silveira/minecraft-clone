@@ -19,8 +19,6 @@ const int kThreshold = kChunkSize*4;
 std::vector<Chunk*> visibility_list;
 std::vector<Chunk*> visibility_temp_list;
 std::vector<Chunk*> unload_list;
-std::vector<Chunk*> unload_temp_list;
-std::vector<Chunk*> remove_list;
 std::vector<Chunk*> load_list;
 std::vector<Chunk*> setup_list;
 std::vector<Chunk*> render_list;
@@ -42,14 +40,6 @@ bool isNear(Chunk* chunk, glm::vec3 pos)
     float dist = glm::length(chunk_center - pos);
 
     return dist <= kThreshold;
-}
-
-bool isFar(Chunk* chunk, glm::vec3 pos)
-{
-    glm::vec3 chunk_center = ChunkCenter(chunk);
-    float dist = glm::length(chunk_center - pos);
-
-    return dist >= kThreshold;
 }
 
 void InitVisibilityList(glm::vec3 cam_pos)
@@ -77,7 +67,6 @@ void UpdateChunks(glm::vec3 cam_pos)
     if (exec_thread)
     {
         cm_thread = std::async(std::launch::async, [&] {
-            UpdateRemoveList(cam_pos);
             UpdateLoadList(cam_pos);
             UpdateSetupList();
         });
@@ -92,20 +81,6 @@ void UpdateChunks(glm::vec3 cam_pos)
     UpdateUnloadList();
 
     exec_thread = true;
-}
-
-void UpdateRemoveList(glm::vec3 cam_pos)
-{
-    for (Chunk* chunk : unload_list)
-    {
-        if (isFar(chunk, cam_pos))
-        {
-            remove_list.push_back(chunk);
-            continue;
-        }
-        unload_temp_list.push_back(chunk);
-    }
-    unload_list.clear();
 }
 
 void UpdateLoadList(glm::vec3 cam_pos)
@@ -148,7 +123,7 @@ void UpdateRenderList()
     }
     setup_list.clear();
 
-    for (Chunk* chunk : remove_list)
+    for (Chunk* chunk : unload_list)
     {
         auto chunk_index = std::find(render_list.begin(), render_list.end(), chunk);
         bool is_rendered = chunk_index != render_list.end();
@@ -156,7 +131,7 @@ void UpdateRenderList()
         if (is_rendered) render_list.erase(chunk_index);
         DeleteChunk(chunk);
     }
-    remove_list.clear();
+    unload_list.clear();
 }
 
 void updateLeftEdgeVisibility(glm::vec3 pos)
@@ -333,12 +308,6 @@ void updateBackEdgeUnload()
 
 void UpdateUnloadList()
 {
-    for (Chunk* chunk : unload_temp_list)
-    {
-        unload_list.push_back(chunk);
-    }
-    unload_temp_list.clear();
-
     if (horizontal_unload_update)
     {
         updateRightEdgeUnload();
