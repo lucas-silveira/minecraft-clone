@@ -14,9 +14,7 @@
 using namespace std::chrono_literals;
 
 const int kTerrainSize = 10;
-const int kHThreshold = kChunkSize*4;
-const int kVThreshold = kChunkSize;
-const int kDThreshold = kChunkSize*4;
+const int kThreshold = kChunkSize*4;
 
 std::vector<Chunk*> visibility_list;
 std::vector<Chunk*> visibility_temp_list;
@@ -43,7 +41,7 @@ bool isNear(Chunk* chunk, glm::vec3 pos)
     glm::vec3 chunk_center = ChunkCenter(chunk);
     float dist = glm::length(chunk_center - pos);
 
-    return dist <= kHThreshold;
+    return dist <= kThreshold;
 }
 
 bool isFar(Chunk* chunk, glm::vec3 pos)
@@ -51,14 +49,13 @@ bool isFar(Chunk* chunk, glm::vec3 pos)
     glm::vec3 chunk_center = ChunkCenter(chunk);
     float dist = glm::length(chunk_center - pos);
 
-    return dist >= kHThreshold;
+    return dist >= kThreshold;
 }
 
 void InitVisibilityList(glm::vec3 cam_pos)
 {
-    left_edge = back_edge = -kTerrainSize / 2;
-    bottom_edge = 0; top_edge = 4;
-    right_edge = front_edge = kTerrainSize / 2;
+    left_edge = bottom_edge = back_edge = -kTerrainSize / 2;
+    right_edge = top_edge = front_edge = kTerrainSize / 2;
 
     for (int x = left_edge; x <= right_edge; x++)
         for (int y = bottom_edge; y <= top_edge; y++)
@@ -101,12 +98,12 @@ void UpdateRemoveList(glm::vec3 cam_pos)
 {
     for (Chunk* chunk : unload_list)
     {
-        if (!isFar(chunk, cam_pos))
+        if (isFar(chunk, cam_pos))
         {
-            unload_temp_list.push_back(chunk);
+            remove_list.push_back(chunk);
             continue;
         }
-        remove_list.push_back(chunk);
+        unload_temp_list.push_back(chunk);
     }
     unload_list.clear();
 }
@@ -115,13 +112,12 @@ void UpdateLoadList(glm::vec3 cam_pos)
 {
     for (Chunk* chunk : visibility_list)
     {
-        if (!isNear(chunk, cam_pos))
+        if (isNear(chunk, cam_pos))
         {
-            visibility_temp_list.push_back(chunk);
+            load_list.push_back(chunk);
             continue;
         }
-
-        load_list.push_back(chunk);
+        visibility_temp_list.push_back(chunk);
     }
     visibility_list.clear();
 }
@@ -166,14 +162,14 @@ void UpdateRenderList()
 void updateLeftEdgeVisibility(glm::vec3 pos)
 {
     float dist_left_edge = glm::length(left_edge * kChunkSize - pos.x);
-    if (dist_left_edge >= kHThreshold) return;
+    if (dist_left_edge >= kThreshold) return;
 
     left_edge--;
     right_edge--;
     horizontal_unload_update = true;
 
-    for (int y = bottom_edge; y < top_edge; y++)
-        for (int z = back_edge; z < front_edge; z++)
+    for (int y = bottom_edge; y <= top_edge; y++)
+        for (int z = back_edge; z <= front_edge; z++)
         {
             glm::vec3 pos(left_edge * kChunkSize, y * kChunkSize, z * kChunkSize);
             Chunk* c = MakeChunk(pos);
@@ -184,14 +180,14 @@ void updateLeftEdgeVisibility(glm::vec3 pos)
 void updateRightEdgeVisibility(glm::vec3 pos)
 {
     float dist_right_edge = glm::length(right_edge * kChunkSize - pos.x);
-    if (dist_right_edge >= kHThreshold) return;
+    if (dist_right_edge >= kThreshold) return;
 
     right_edge++;
     left_edge++;
     horizontal_unload_update = true;
 
-    for (int y = bottom_edge; y < top_edge; y++)
-        for (int z = back_edge; z < front_edge; z++)
+    for (int y = bottom_edge; y <= top_edge; y++)
+        for (int z = back_edge; z <= front_edge; z++)
         {
             glm::vec3 pos(right_edge * kChunkSize, y * kChunkSize, z * kChunkSize);
             Chunk* c = MakeChunk(pos);
@@ -202,14 +198,14 @@ void updateRightEdgeVisibility(glm::vec3 pos)
 void updateBottomEdgeVisibility(glm::vec3 pos)
 {
     float dist_bottom_edge = glm::length(bottom_edge * kChunkSize - pos.y);
-    if (dist_bottom_edge >= kVThreshold) return;
+    if (dist_bottom_edge >= kThreshold) return;
 
     bottom_edge--;
     top_edge--;
     vertical_unload_update = true;
 
-    for (int x = left_edge; x < right_edge; x++)
-        for (int z = back_edge; z < front_edge; z++)
+    for (int x = left_edge; x <= right_edge; x++)
+        for (int z = back_edge; z <= front_edge; z++)
         {
             glm::vec3 pos(x * kChunkSize, bottom_edge * kChunkSize, z * kChunkSize);
             Chunk* c = MakeChunk(pos);
@@ -220,14 +216,14 @@ void updateBottomEdgeVisibility(glm::vec3 pos)
 void updateTopEdgeVisibility(glm::vec3 pos)
 {
     float dist_top_edge = glm::length(top_edge * kChunkSize - pos.y);
-    if (dist_top_edge >= kVThreshold) return;
+    if (dist_top_edge >= kThreshold) return;
 
     top_edge++;
     bottom_edge++;
     vertical_unload_update = true;
 
-    for (int x = left_edge; x < right_edge; x++)
-        for (int z = back_edge; z < front_edge; z++)
+    for (int x = left_edge; x <= right_edge; x++)
+        for (int z = back_edge; z <= front_edge; z++)
         {
             glm::vec3 pos(x * kChunkSize, top_edge * kChunkSize, z * kChunkSize);
             Chunk* c = MakeChunk(pos);
@@ -238,14 +234,14 @@ void updateTopEdgeVisibility(glm::vec3 pos)
 void updateBackEdgeVisibility(glm::vec3 pos)
 {
     float dist_back_edge = glm::length(back_edge * kChunkSize - pos.z);
-    if (dist_back_edge >= kDThreshold) return;
+    if (dist_back_edge >= kThreshold) return;
 
     back_edge--;
     front_edge--;
     depth_unload_update = true;
 
-    for (int x = left_edge; x < right_edge; x++)
-        for (int y = bottom_edge; y < top_edge; y++)
+    for (int x = left_edge; x <= right_edge; x++)
+        for (int y = bottom_edge; y <= top_edge; y++)
         {
             glm::vec3 pos(x * kChunkSize, y * kChunkSize, back_edge * kChunkSize);
             Chunk* c = MakeChunk(pos);
@@ -256,14 +252,14 @@ void updateBackEdgeVisibility(glm::vec3 pos)
 void updateFrontEdgeVisibility(glm::vec3 pos)
 {
     float dist_front_edge = glm::length(front_edge * kChunkSize - pos.z);
-    if (dist_front_edge >= kDThreshold) return;
+    if (dist_front_edge >= kThreshold) return;
 
     front_edge++;
     back_edge++;
     depth_unload_update = true;
 
-    for (int x = left_edge; x < right_edge; x++)
-        for (int y = bottom_edge; y < top_edge; y++)
+    for (int x = left_edge; x <= right_edge; x++)
+        for (int y = bottom_edge; y <= top_edge; y++)
         {
             glm::vec3 pos(x * kChunkSize, y * kChunkSize, front_edge * kChunkSize);
             Chunk* c = MakeChunk(pos);
@@ -271,7 +267,7 @@ void updateFrontEdgeVisibility(glm::vec3 pos)
         }
 }
 
-void UpdateVisibilityList(glm::vec3 pos) // remover chunks distantes e adicionar novos chunks em pontecial
+void UpdateVisibilityList(glm::vec3 pos)
 {
     for (Chunk* chunk : visibility_temp_list)
     {
@@ -281,8 +277,8 @@ void UpdateVisibilityList(glm::vec3 pos) // remover chunks distantes e adicionar
 
     updateLeftEdgeVisibility(pos);
     updateRightEdgeVisibility(pos);
-    updateBottomEdgeVisibility(pos);
-    updateTopEdgeVisibility(pos);
+    //updateBottomEdgeVisibility(pos);
+    //updateTopEdgeVisibility(pos);
     updateBackEdgeVisibility(pos);
     updateFrontEdgeVisibility(pos);
 }
@@ -350,13 +346,13 @@ void UpdateUnloadList()
         horizontal_unload_update = false;
     }
 
-    if (vertical_unload_update)
-    {
+    //if (vertical_unload_update)
+    //{
 
-        updateTopEdgeUnload();
-        updateBottomEdgeUnload();
-        vertical_unload_update = false;
-    }
+    //    updateTopEdgeUnload();
+    //    updateBottomEdgeUnload();
+    //    vertical_unload_update = false;
+    //}
 
     if (depth_unload_update)
     {
