@@ -1,13 +1,13 @@
 #include "chunk-management.h"
 
-#include <glm/glm.hpp>
-
 #include <math.h>
 
 #include <vector>
 #include <future>
 #include <thread>
 #include <chrono>
+
+#include <glm/glm.hpp>
 
 #include "chunk.h"
 

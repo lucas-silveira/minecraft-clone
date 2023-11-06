@@ -1,9 +1,9 @@
 #ifndef CHUNK_H
 #define CHUNK_H
 
-#include <glm/glm.hpp>
-
 #include <vector>
+
+#include <glm/glm.hpp>
 
 #include "block.h"
 

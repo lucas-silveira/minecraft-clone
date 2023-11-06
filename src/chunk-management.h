@@ -1,9 +1,9 @@
 #ifndef CHUNKM_H
 #define CHUNKM_H
 
-#include <glm/glm.hpp>
-
 #include <vector>
+
+#include <glm/glm.hpp>
 
 #include "chunk.h"
 
